@@ -1,194 +1,157 @@
 
-const express = require('express');
-const axios = require('axios');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const SAVEAPI_KEY = process.env.SAVEAPI_KEY;
 
-app.disable('x-powered-by');
-app.use(express.json({ limit: '10kb' }));
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors());
+app.use(express.json({ limit: "20kb" }));
+app.use(express.static(path.join(__dirname, "public")));
 
-// Verifica se a API está configurada.
-function getApiConfig() {
-    const base = process.env.COBALT_API_URL;
+function isInstagramUrl(value) {
+  try {
+    const url = new URL(value);
+    const host = url.hostname.toLowerCase();
 
-    if (!base) return null;
-
-    const parsed = new URL(base);
-
-    if (parsed.protocol !== 'https:') {
-        throw new Error('A API precisa utilizar HTTPS.');
-    }
-
-    return {
-        url: parsed.toString().replace(/\/+$/, '') + '/',
-        key: process.env.COBALT_API_KEY || '',
-        scheme: process.env.COBALT_AUTH_SCHEME || 'Api-Key'
-    };
+    return (
+      ["http:", "https:"].includes(url.protocol) &&
+      (
+        host === "instagram.com" ||
+        host.endsWith(".instagram.com") ||
+        host === "instagr.am" ||
+        host.endsWith(".instagr.am")
+      )
+    );
+  } catch {
+    return false;
+  }
 }
 
-// Diagnóstico básico do servidor.
-app.get('/api/health', (req, res) => {
-    res.json({
-        online: true,
-        apiConfigured: Boolean(process.env.COBALT_API_URL)
+app.get("/api/health", (req, res) => {
+  res.json({
+    success: true,
+    service: "Neko Downloader",
+    apiConfigured: Boolean(SAVEAPI_KEY)
+  });
+});
+
+app.post("/api/download", async (req, res) => {
+  try {
+    if (!SAVEAPI_KEY) {
+      return res.status(503).json({
+        success: false,
+        error: "API não configurada no servidor."
+      });
+    }
+
+    const { url } = req.body || {};
+
+    if (!url || typeof url !== "string" || !isInstagramUrl(url)) {
+      return res.status(400).json({
+        success: false,
+        error: "Informe um link válido do Instagram."
+      });
+    }
+
+    const endpoint = new URL(
+      "https://api.saveapi.org/v1/download"
+    );
+    endpoint.searchParams.set("url", url);
+
+    const response = await fetch(endpoint, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${SAVEAPI_KEY}`,
+        Accept: "application/json"
+      },
+      signal: AbortSignal.timeout(30000)
     });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || data.success !== true) {
+      const status = response.status === 429 ? 429 : 502;
+
+      return res.status(status).json({
+        success: false,
+        error:
+          data.error?.message ||
+          data.message ||
+          "Não foi possível obter o vídeo. Tente novamente.",
+        code: data.error?.code || null
+      });
+    }
+
+    const videos = Array.isArray(data.medias)
+      ? data.medias.filter(
+          media =>
+            media.type === "video" &&
+            typeof media.url === "string" &&
+            /^https:\/\//i.test(media.url)
+        )
+      : [];
+
+    if (videos.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Nenhum vídeo disponível nesse link público."
+      });
+    }
+
+    // Prefere a maior resolução informada pela API.
+    videos.sort((a, b) => {
+      const resolutionA = (a.width || 0) * (a.height || 0);
+      const resolutionB = (b.width || 0) * (b.height || 0);
+      return resolutionB - resolutionA;
+    });
+
+    const selected = videos[0];
+
+    return res.json({
+      success: true,
+      url: selected.url,
+      download_url: selected.url,
+      medias: videos,
+      platform: data.platform || "instagram",
+      type: data.type || "video",
+      caption: data.meta?.caption || data.caption || "",
+      thumbnail:
+        data.meta?.thumbnail ||
+        data.meta?.thumbnail_url ||
+        data.thumb ||
+        null
+    });
+  } catch (error) {
+    console.error("Erro no download:", error.message);
+
+    return res.status(502).json({
+      success: false,
+      error: error.name === "TimeoutError"
+        ? "A API demorou demais para responder. Tente novamente."
+        : "Falha ao consultar o serviço de download."
+    });
+  }
 });
 
-// Solicita a extração à instância Cobalt configurada.
-app.post('/api/download', async (req, res) => {
-    const input = req.body?.url;
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({
+      success: false,
+      error: "Rota da API não encontrada."
+    });
+  }
 
-    if (typeof input !== 'string' || input.length > 2048) {
-        return res.status(400).json({
-            error: 'Cole um link válido do Instagram.'
-        });
+  res.sendFile(
+    path.join(__dirname, "public", "index.html"),
+    err => {
+      if (err) next(err);
     }
-
-    let source;
-
-    try {
-        source = new URL(input.trim());
-    } catch {
-        return res.status(400).json({
-            error: 'O link informado não é válido.'
-        });
-    }
-
-    if (
-        source.protocol !== 'https:' ||
-        !['instagram.com', 'www.instagram.com',
-          'm.instagram.com'].includes(source.hostname)
-    ) {
-        return res.status(400).json({
-            error: 'Use um link HTTPS do Instagram.'
-        });
-    }
-
-    let config;
-
-    try {
-        config = getApiConfig();
-    } catch (error) {
-        console.error('Configuração inválida:', error.message);
-        return res.status(500).json({
-            error: 'A configuração da API é inválida.'
-        });
-    }
-
-    if (!config) {
-        return res.status(503).json({
-            error: 'API não configurada. Consulte o README.'
-        });
-    }
-
-    try {
-        const headers = {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-        };
-
-        if (config.key) {
-            headers.Authorization =
-                `${config.scheme} ${config.key}`;
-        }
-
-        const response = await axios.post(
-            config.url,
-            {
-                url: source.toString(),
-                videoQuality: 'max',
-                filenameStyle: 'pretty'
-            },
-            {
-                headers,
-                timeout: 45000,
-                maxRedirects: 0,
-                validateStatus: status =>
-                    status >= 200 && status < 300
-            }
-        );
-
-        const data = response.data;
-
-        if (!data || typeof data.status !== 'string') {
-            throw new Error('Resposta inesperada da API.');
-        }
-
-        if (
-            ['tunnel', 'redirect'].includes(data.status) &&
-            typeof data.url === 'string'
-        ) {
-            const media = new URL(data.url);
-
-            if (media.protocol !== 'https:') {
-                throw new Error('A API retornou uma URL insegura.');
-            }
-
-            return res.json({
-                success: true,
-                mediaUrl: media.toString(),
-                filename: data.filename || 'Neko_Download'
-            });
-        }
-
-        if (data.status === 'picker') {
-            const items = Array.isArray(data.picker)
-                ? data.picker
-                    .filter(item =>
-                        item &&
-                        ['video', 'photo', 'gif'].includes(item.type) &&
-                        typeof item.url === 'string' &&
-                        item.url.startsWith('https://')
-                    )
-                    .map(item => ({
-                        type: item.type,
-                        url: item.url,
-                        thumb: typeof item.thumb === 'string'
-                            ? item.thumb : null
-                    }))
-                : [];
-
-            return res.status(200).json({
-                success: true,
-                picker: items,
-                message: 'Escolha uma das mídias disponíveis.'
-            });
-        }
-
-        console.error(
-            'Erro retornado pela API:',
-            JSON.stringify(data).slice(0, 1000)
-        );
-
-        return res.status(502).json({
-            error: data.status === 'error'
-                ? 'A API não conseguiu extrair esta publicação.'
-                : 'A API retornou um formato não suportado.',
-            code: data.error?.code || data.status
-        });
-
-    } catch (error) {
-        console.error('Erro na extração:', {
-            message: error.message,
-            status: error.response?.status,
-            data: error.response?.data
-        });
-
-        if (error.code === 'ECONNABORTED') {
-            return res.status(504).json({
-                error: 'A extração demorou demais. Tente novamente.'
-            });
-        }
-
-        return res.status(502).json({
-            error: 'Falha ao consultar a API. Verifique os logs do Render.'
-        });
-    }
+  );
 });
 
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🐱 Neko Downloader ativo na porta ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Neko Downloader rodando na porta ${PORT}`);
 });
