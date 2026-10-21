@@ -3,157 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NekoDownloader Pro - 🐾 Kawaii Edition</title>
+    <title>NekoDownloader 🐾 - Por uma internet mais limpa</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <style>
         body { font-family: 'Quicksand', sans-serif; }
-        .kawaii-gradient { background: linear-gradient(135deg, #ffd1dc 0%, #ffb7b2 50%, #ff9aa2 100%); }
-        .paw-pattern {
-            background-color: #fff9fb;
-            background-image: radial-gradient(#ffccd5 1.5px, transparent 1.5px);
-            background-size: 24px 24px;
+        .kawaii-gradient { background: linear-gradient(135deg, #ffe5ec 0%, #ffc2d1 50%, #ffb3c6 100%); }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 15px 35px rgba(255, 179, 198, 0.25);
         }
+        .float-anim { animation: float 3s ease-in-out infinite; }
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-8px); }
+            100% { transform: translateY(0px); }
+        }
+        .paw-pattern {
+            background-color: #fff9fa;
+            background-image: radial-gradient(#ffccd5 1.5px, transparent 1.5px);
+            background-size: 28px 28px;
+        }
+        .input-glow:focus { box-shadow: 0 0 0 4px rgba(255, 179, 198, 0.3); }
     </style>
 </head>
 <body class="paw-pattern min-h-screen flex flex-col justify-between text-gray-700">
 
-    <header class="w-full py-4 px-6 bg-white/90 backdrop-blur-md shadow-sm border-b border-pink-100 flex justify-between items-center sticky top-0 z-50">
+    <header class="w-full py-4 px-6 glass-panel flex justify-between items-center sticky top-0 z-50 rounded-b-3xl">
         <div class="flex items-center space-x-2">
-            <span class="text-3xl animate-bounce">🐱</span>
-            <h1 class="text-xl font-bold text-pink-600 tracking-wide">NekoDownloader</h1>
+            <span class="text-3xl float-anim">🐱</span>
+            <h1 class="text-xl font-bold text-pink-500 tracking-wide flex items-center gap-1">
+                Neko<span class="text-pink-300 font-medium">Downloader</span> ✨
+            </h1>
         </div>
-        <div class="text-xs bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 shadow-sm">
-            <i class="ph-fill ph-check-circle text-pink-500"></i> Extrator Real Ativo
+        <div class="text-[10px] uppercase tracking-wider bg-pink-50 text-pink-500 px-4 py-2 rounded-full font-bold flex items-center gap-1.5 border border-pink-100 float-anim">
+            <i class="ph-fill ph-sparkle text-pink-400 text-sm"></i> Magia Ativa
         </div>
     </header>
 
-    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 max-w-xl mx-auto w-full">
-        <div class="bg-white/95 backdrop-blur-md border border-pink-200 shadow-xl rounded-3xl p-6 sm:p-8 w-full text-center relative overflow-hidden">
+    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 max-w-xl mx-auto w-full mt-4">
+        <div class="glass-panel rounded-[2.5rem] p-6 sm:p-8 w-full text-center relative overflow-hidden">
             
-            <div class="absolute -top-6 -right-6 w-20 h-20 bg-pink-100 rounded-full flex items-center justify-center text-3xl shadow-inner">
-                🐾
+            <div class="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center text-4xl opacity-70 float-anim">
+                🌸
             </div>
+            <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-tr from-pink-50 to-white rounded-full opacity-60"></div>
 
-            <div class="mb-6">
-                <span class="inline-block p-3 bg-pink-50 rounded-2xl text-3xl mb-2 text-pink-500 shadow-sm">
+            <div class="mb-8 relative z-10">
+                <span class="inline-block p-4 bg-white rounded-3xl text-4xl mb-3 text-pink-400 shadow-sm border border-pink-50 float-anim">
                     <i class="ph-duotone ph-instagram-logo"></i>
                 </span>
-                <h2 class="text-2xl font-bold text-gray-800">Baixe do Instagram com Amor!</h2>
-                <p class="text-sm text-gray-500 mt-1">Cole o link (Reels, Foto ou IGTV). Contas públicas apenas! 🌸</p>
+                <h2 class="text-2xl font-bold text-gray-700">Baixe com carinho!</h2>
+                <p class="text-sm text-gray-400 mt-2 font-medium">Por uma internet mais limpa, leve e fofa. Cole o link público abaixo. ☁️</p>
             </div>
 
-            <div class="space-y-4">
+            <div class="space-y-5 relative z-10">
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-pink-400">
-                        <i class="ph-bold ph-link text-lg"></i>
-                    </span>
-                    <input type="url" id="instaUrl" placeholder="https://www.instagram.com/reel/..." 
-                        class="w-full pl-11 pr-10 py-3.5 bg-pink-50/50 border border-pink-200 rounded-2xl focus:outline-none focus:ring-2 focus:ring-pink-400 focus:bg-white text-sm transition-all shadow-inner">
-                </div>
-
-                <button onclick="handleDownload()" id="submitBtn"
-                    class="w-full kawaii-gradient text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg hover:opacity-95 transform active:scale-95 transition-all flex items-center justify-center gap-2 text-base cursor-pointer">
-                    <i class="ph-bold ph-magic-wand text-xl"></i> Extrair Mídia Real 🐾
-                </button>
-            </div>
-
-            <div id="errorBox" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-500 text-sm flex items-center gap-2 text-left">
-                <span class="text-xl">😿</span>
-                <span id="errorText">Erro!</span>
-            </div>
-
-            <div id="loadingState" class="hidden mt-6 flex flex-col items-center justify-center space-y-3">
-                <div class="text-4xl animate-bounce">🐈‍⬛</div>
-                <p class="text-xs font-semibold text-pink-500 animate-pulse">Invadindo a nuvem do Instagram para puxar o arquivo...</p>
-            </div>
-
-            <div id="resultState" class="hidden mt-6 text-left bg-pink-50/80 border border-pink-200 rounded-2xl p-4 space-y-4 shadow-sm">
-                <div class="flex items-center justify-between border-b border-pink-200 pb-2">
-                    <span class="text-xs font-bold text-emerald-600 flex items-center gap-1">
-                        <i class="ph-fill ph-check-circle"></i> Arquivo Capturado!
-                    </span>
-                    <button onclick="resetApp()" class="text-xs bg-white text-pink-500 border border-pink-200 px-2.5 py-1 rounded-lg font-semibold hover:bg-pink-100">
-                        Novo Link 🔄
-                    </button>
-                </div>
-
-                <div class="bg-white p-3 rounded-xl border border-pink-100 flex items-center justify-between shadow-sm">
-                    <div>
-                        <p class="text-sm font-bold text-gray-800">Mídia Pronta 🐾</p>
-                        <p class="text-[10px] text-gray-500 font-medium">Link direto extraído dos servidores da Meta</p>
-                    </div>
-                    <span class="bg-emerald-100 text-emerald-600 text-xs px-2.5 py-1 rounded-lg font-bold">1080p</span>
-                </div>
-
-                <!-- O link agora abrirá/baixará o MP4 real -->
-                <a id="downloadBtn" href="#" target="_blank"
-                    class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm text-center">
-                    <i class="ph-bold ph-download-simple text-lg"></i> Fazer Download Agora
-                </a>
-            </div>
-
-        </div>
-    </main>
-
-    <script>
-        async function handleDownload() {
-            const urlInput = document.getElementById('instaUrl').value.trim();
-            const errorBox = document.getElementById('errorBox');
-            const errorText = document.getElementById('errorText');
-            const loadingState = document.getElementById('loadingState');
-            const resultState = document.getElementById('resultState');
-
-            errorBox.classList.add('hidden');
-            resultState.classList.add('hidden');
-
-            if (!urlInput || !urlInput.includes('instagram.com')) {
-                errorText.innerText = "Miau! Cole um link válido do Instagram.";
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            loadingState.classList.remove('hidden');
-
-            try {
-                // Chama a nossa nova API extratora
-                const response = await fetch('/api/download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: urlInput })
-                });
-
-                const data = await response.json();
-                loadingState.classList.add('hidden');
-
-                if (!response.ok) {
-                    errorText.innerText = data.error || "Erro ao processar o link.";
-                    errorBox.classList.remove('hidden');
-                    return;
-                }
-
-                // Coloca o link do MP4/JPG cru no botão verde
-                const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = data.mediaUrl;
-                
-                // Força o comportamento de download nativo do telemóvel
-                downloadBtn.setAttribute('download', 'neko_midia'); 
-
-                resultState.classList.remove('hidden');
-
-            } catch (err) {
-                loadingState.classList.add('hidden');
-                errorText.innerText = "Miau! O servidor está a dormir. Tente novamente!";
-                errorBox.classList.remove('hidden');
-            }
-        }
-
-        function resetApp() {
-            document.getElementById('instaUrl').value = '';
-            document.getElementById('resultState').classList.add('hidden');
-            document.getElementById('errorBox').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
+                    <span class="absolute inset-y-0 left-0 pl-5
