@@ -21,16 +21,16 @@ app.post('/api/download', async (req, res) => {
     }
 
     try {
-        // Simulação de processamento de alta qualidade tratada pelo servidor
+        // Simulação de processamento com um link de vídeo 100% público e livre de erros 403
         setTimeout(() => {
             res.json({
                 success: true,
                 title: "Reel / Mídia do Instagram capturada com sucesso! 🐾",
                 type: "video",
                 quality: "HD 1080p",
-                mediaUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4"
+                mediaUrl: "https://www.w3schools.com/html/mov_bbb.mp4"
             });
-        }, 1500);
+        }, 1200);
 
     } catch (error) {
         res.status(500).json({ error: 'Ops! O gatinho não conseguiu processar este link agora. Tente novamente.' });
