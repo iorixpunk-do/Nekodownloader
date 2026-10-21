@@ -1,17 +1,18 @@
+
 {
   "name": "neko-downloader",
-  "version": "1.0.0",
-  "description": "Baixador do Instagram Kawaii com Backend",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Neko Downloader - interface kawaii para mídias públicas",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "express": "^4.19.2",
-    "cors": "^2.8.5",
-    "axios": "^1.6.8"
-  },
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "express": "^4.21.2"
   }
 }
