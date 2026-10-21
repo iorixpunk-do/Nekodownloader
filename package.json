@@ -2,7 +2,7 @@
 {
   "name": "neko-downloader",
   "version": "1.0.0",
-  "description": "Downloader de vídeos públicos do Instagram",
+  "description": "Neko Downloader",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -11,7 +11,7 @@
     "node": "22.x"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^5.1.0"
+    "express": "^4.21.2",
+    "cors": "^2.8.5"
   }
 }
