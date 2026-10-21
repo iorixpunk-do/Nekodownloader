@@ -62,4 +62,118 @@
 
             <div class="space-y-5 relative z-10">
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-5
+                    <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-pink-300">
+                        <i class="ph-bold ph-link text-xl"></i>
+                    </span>
+                    <input type="url" id="instaUrl" placeholder="https://www.instagram.com/p/..." 
+                        class="w-full pl-12 pr-6 py-4 bg-white/60 border-2 border-pink-100 rounded-2xl focus:outline-none focus:border-pink-300 input-glow text-sm transition-all font-medium text-gray-600 placeholder-gray-400">
+                </div>
+
+                <button onclick="handleDownload()" id="submitBtn"
+                    class="w-full kawaii-gradient text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95 transition-all flex items-center justify-center gap-2 text-base cursor-pointer border border-pink-200/50">
+                    <i class="ph-bold ph-magic-wand text-xl"></i> Purificar e Extrair Mídia ✨
+                </button>
+            </div>
+
+            <div id="errorBox" class="hidden mt-5 p-4 bg-red-50/80 border-2 border-red-100 rounded-2xl text-red-400 text-sm flex items-center gap-3 text-left float-anim">
+                <span class="text-2xl">😿</span>
+                <span id="errorText" class="font-medium">Ops, algo deu errado!</span>
+            </div>
+
+            <div id="loadingState" class="hidden mt-8 flex flex-col items-center justify-center space-y-4">
+                <div class="text-5xl float-anim">🐈‍⬛</div>
+                <p class="text-sm font-semibold text-pink-400 animate-pulse bg-pink-50/50 px-4 py-2 rounded-full">
+                    Limpando as impurezas e buscando a sua mídia... ✨
+                </p>
+            </div>
+
+            <div id="resultState" class="hidden mt-8 text-left bg-white/60 border-2 border-pink-100 rounded-[2rem] p-5 space-y-5 shadow-sm">
+                <div class="flex items-center justify-between border-b-2 border-pink-50 pb-3">
+                    <span class="text-sm font-bold text-pink-500 flex items-center gap-2">
+                        <i class="ph-fill ph-stars text-lg text-pink-400"></i> Pronto, purificado!
+                    </span>
+                    <button onclick="resetApp()" class="text-xs bg-white text-pink-400 border-2 border-pink-100 px-3 py-1.5 rounded-xl font-bold hover:bg-pink-50 transition-colors flex items-center gap-1">
+                        Novo <i class="ph-bold ph-arrows-clockwise"></i>
+                    </button>
+                </div>
+
+                <div class="bg-white p-4 rounded-2xl border border-pink-50 flex items-center justify-between shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 kawaii-gradient rounded-full flex items-center justify-center text-white text-lg shadow-inner">
+                            🐾
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-gray-700">Mídia Resgatada</p>
+                            <p class="text-[11px] text-pink-400 font-medium uppercase tracking-wide">Sem rastreadores externos</p>
+                        </div>
+                    </div>
+                </div>
+
+                <a id="downloadBtn" href="#" 
+                    class="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-bold py-4 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm text-center border border-emerald-300">
+                    <i class="ph-bold ph-download-simple text-xl"></i> Salvar na Galeria com Amor ☁️
+                </a>
+            </div>
+
+        </div>
+    </main>
+    
+    <footer class="text-center py-6 text-xs text-pink-300 font-medium flex items-center justify-center gap-1.5">
+        Mantendo a internet limpa com <i class="ph-fill ph-heart text-pink-400 animate-pulse"></i> e carinho felino.
+    </footer>
+
+    <script>
+        async function handleDownload() {
+            const urlInput = document.getElementById('instaUrl').value.trim();
+            const errorBox = document.getElementById('errorBox');
+            const errorText = document.getElementById('errorText');
+            const loadingState = document.getElementById('loadingState');
+            const resultState = document.getElementById('resultState');
+
+            errorBox.classList.add('hidden');
+            resultState.classList.add('hidden');
+
+            if (!urlInput || !urlInput.includes('instagram.com')) {
+                errorText.innerText = "Miau! Cole um link válido do Instagram para continuarmos.";
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            loadingState.classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput })
+                });
+
+                const data = await response.json();
+                loadingState.classList.add('hidden');
+
+                if (!response.ok) {
+                    errorText.innerText = data.error || "A magia falhou. Verifique se o perfil é público!";
+                    errorBox.classList.remove('hidden');
+                    return;
+                }
+
+                const downloadBtn = document.getElementById('downloadBtn');
+                downloadBtn.href = `/api/stream?url=${encodeURIComponent(data.mediaUrl)}`;
+
+                resultState.classList.remove('hidden');
+
+            } catch (err) {
+                loadingState.classList.add('hidden');
+                errorText.innerText = "Nossos gatinhos servidores estão dormindo. Tente novamente!";
+                errorBox.classList.remove('hidden');
+            }
+        }
+
+        function resetApp() {
+            document.getElementById('instaUrl').value = '';
+            document.getElementById('resultState').classList.add('hidden');
+            document.getElementById('errorBox').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
