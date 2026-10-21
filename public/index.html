@@ -1,1 +1,204 @@
 
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff6fa">
+  <meta name="description" content="Neko Downloader: ferramenta para acessar mídias públicas do Instagram.">
+  <title>Neko Downloader ✨</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; font-family: system-ui, -apple-system, sans-serif;
+      color: #353b4a; background-color: #fff7fa;
+      background-image: radial-gradient(#f5c9dc 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+    }
+    header {
+      background: rgba(255,255,255,.96); border-radius: 0 0 30px 30px;
+      padding: 22px 18px; box-shadow: 0 5px 25px #edbfd21c;
+    }
+    .top {
+      max-width: 760px; margin: auto; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+    }
+    .brand { font-size: clamp(19px, 4.5vw, 28px); font-weight: 800; color: #e45eaa; }
+    .pill {
+      border: 1px solid #f6dce9; background: #fff2f8; color: #d65b9e;
+      border-radius: 30px; padding: 10px 14px; font-size: 12px; font-weight: 800;
+    }
+    main { width: min(620px, calc(100% - 28px)); margin: 55px auto; }
+    .panel {
+      position: relative; overflow: hidden; text-align: center;
+      background: rgba(255,255,255,.97); border: 1px solid white; border-radius: 36px;
+      padding: 35px clamp(18px, 5vw, 42px); box-shadow: 0 15px 45px #eab9d51c;
+    }
+    .flower {
+      position: absolute; right: 0; top: 0; background: #fff0f7;
+      border-radius: 0 0 0 75px; padding: 17px; font-size: 35px;
+    }
+    .insta {
+      display: grid; place-items: center; margin: 0 auto 25px; width: 90px; height: 90px;
+      border: 1px solid #f9edf3; border-radius: 28px; color: #e779b7;
+      font-size: 48px; box-shadow: 0 3px 6px #00000008;
+    }
+    h1 { font-size: clamp(25px, 5vw, 35px); margin: 0 0 14px; }
+    .subtitle { color: #969ba6; line-height: 1.7; margin: 0 auto 28px; }
+    input {
+      display: block; width: 100%; min-width: 0; padding: 18px 16px; font-size: 16px;
+      color: #353b4a; background: white; border: 2px solid #f7dfeb; border-radius: 20px; outline: none;
+    }
+    input:focus { border-color: #e779b7; box-shadow: 0 0 0 3px #e779b71c; }
+    button, .download {
+      display: block; width: 100%; margin-top: 16px; padding: 17px 14px; border: 0;
+      border-radius: 20px; background: linear-gradient(110deg, #ffcee2, #f5a5c9);
+      color: white; font-size: 16px; font-weight: 800; cursor: pointer; text-decoration: none;
+      box-shadow: 0 7px 15px #e88bb52b;
+    }
+    button:disabled { opacity: .65; cursor: wait; }
+    .status {
+      display: none; margin-top: 20px; padding: 16px; border-radius: 18px;
+      text-align: left; line-height: 1.5; overflow-wrap: anywhere;
+    }
+    .status.show { display: block; }
+    .status.error { background: #fff3f2; color: #c45c68; border: 1px solid #f8dddd; }
+    .status.info { background: #fff5fa; color: #8c5071; border: 1px solid #f8deeb; }
+    .result {
+      display: none; margin-top: 20px; padding: 18px; border: 1px solid #f5ddeb;
+      border-radius: 20px; background: #fffafd;
+    }
+    .result.show { display: block; }
+    .result p { overflow-wrap: anywhere; }
+    .download { background: #e778b2; }
+    .note { margin-top: 25px; color: #a0a3ad; font-size: 12px; line-height: 1.6; }
+    footer { padding: 0 20px 30px; text-align: center; color: #aaa0a8; font-size: 12px; }
+    @media (max-width: 420px) {
+      main { margin: 30px auto; }
+      .panel { padding-top: 45px; }
+      .pill { font-size: 10px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">🐱 Neko Downloader ✨</div>
+      <div class="pill">🌸 MAGIA ATIVA</div>
+    </div>
+  </header>
+  <main>
+    <section class="panel">
+      <div class="flower" aria-hidden="true">🌸</div>
+      <div class="insta" aria-hidden="true">◎</div>
+      <h1>Baixe com carinho!</h1>
+      <p class="subtitle">Uma internet mais leve, linda e fofa. Cole abaixo o link de uma publicação pública.</p>
+      <form id="downloadForm">
+        <label for="instagramUrl" style="display:block;text-align:left;margin-bottom:8px;font-weight:600">
+          🔗 Link do Instagram
+        </label>
+        <input id="instagramUrl" type="url" placeholder="https://www.instagram.com/reel/..." autocomplete="url" required maxlength="2048">
+        <button id="submitButton" type="submit">✨ Purificar e Extrair Mídia</button>
+      </form>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+      <div id="result" class="result">
+        <strong>🐾 Sua mídia está pronta!</strong>
+        <p id="filename"></p>
+        <a id="downloadLink" class="download" href="#" target="_blank" rel="noopener noreferrer">⬇️ Abrir / baixar mídia</a>
+        <p class="note">Se o vídeo abrir no navegador, use o menu do navegador para baixar ou salvar o arquivo, quando disponível.</p>
+      </div>
+      <p class="note">Funciona conforme a disponibilidade da API e o acesso à publicação. Baixe apenas conteúdo que você tenha autorização para salvar.</p>
+    </section>
+  </main>
+  <footer>Neko Downloader 🐱 · Feito com carinho</footer>
+  <script>
+    const form = document.getElementById('downloadForm');
+    const input = document.getElementById('instagramUrl');
+    const button = document.getElementById('submitButton');
+    const statusBox = document.getElementById('status');
+    const resultBox = document.getElementById('result');
+    const downloadLink = document.getElementById('downloadLink');
+    const filename = document.getElementById('filename');
+
+    function showStatus(message, type = 'info') {
+      statusBox.textContent = message;
+      statusBox.className = `status show ${type}`;
+    }
+
+    function hideResult() {
+      resultBox.classList.remove('show');
+      downloadLink.removeAttribute('href');
+    }
+
+    function validInstagramUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' &&
+          ['instagram.com', 'www.instagram.com', 'm.instagram.com'].includes(url.hostname.toLowerCase());
+      } catch {
+        return false;
+      }
+    }
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      hideResult();
+      const url = input.value.trim();
+
+      if (!validInstagramUrl(url)) {
+        showStatus('😿 Cole um link HTTPS válido do Instagram.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '⏳ Extraindo mídia...';
+      showStatus('🌸 Consultando a API. Aguarde um instante.');
+
+      try {
+        const response = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || data.message || 'Não foi possível extrair a mídia.');
+        }
+
+        // Compatibilidade com os diferentes nomes de campo usados pelo servidor.
+        const mediaList = Array.isArray(data.medias) ? data.medias :
+                          Array.isArray(data.picker) ? data.picker : [];
+        const firstMedia = mediaList.find(item =>
+          item && typeof item.url === 'string' &&
+          (!item.type || item.type === 'video')
+        );
+
+        const mediaUrl = data.mediaUrl || data.download_url || data.url ||
+                         (firstMedia ? firstMedia.url : null);
+
+        if (!data.success || !mediaUrl) {
+          throw new Error(data.error || 'A API não retornou um arquivo. Verifique a resposta da API no Render.');
+        }
+
+        const media = new URL(mediaUrl);
+        if (media.protocol !== 'https:') {
+          throw new Error('A API retornou um endereço inseguro.');
+        }
+
+        downloadLink.href = media.toString();
+        filename.textContent = data.filename || 'Neko_Download';
+        resultBox.classList.add('show');
+        showStatus('✨ Extração concluída! Toque no botão para acessar a mídia.', 'info');
+
+      } catch (error) {
+        showStatus('😿 ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '✨ Purificar e Extrair Mídia';
+      }
+    });
+  </script>
+</body>
+</html>
