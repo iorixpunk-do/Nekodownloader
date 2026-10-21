@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -25,7 +25,7 @@
             <h1 class="text-xl font-bold text-pink-600 tracking-wide">NekoDownloader</h1>
         </div>
         <div class="text-xs bg-pink-100 text-pink-600 px-3 py-1.5 rounded-full font-semibold flex items-center gap-1 shadow-sm">
-            <i class="ph-fill ph-heart text-pink-500"></i> Servidor Ativo 🐾
+            <i class="ph-fill ph-check-circle text-pink-500"></i> Extrator Real Ativo
         </div>
     </header>
 
@@ -41,7 +41,7 @@
                     <i class="ph-duotone ph-instagram-logo"></i>
                 </span>
                 <h2 class="text-2xl font-bold text-gray-800">Baixe do Instagram com Amor!</h2>
-                <p class="text-sm text-gray-500 mt-1">Cole o link do seu Reels ou Foto favorita aqui embaixo. 🌸</p>
+                <p class="text-sm text-gray-500 mt-1">Cole o link (Reels, Foto ou IGTV). Contas públicas apenas! 🌸</p>
             </div>
 
             <div class="space-y-4">
@@ -55,53 +55,45 @@
 
                 <button onclick="handleDownload()" id="submitBtn"
                     class="w-full kawaii-gradient text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg hover:opacity-95 transform active:scale-95 transition-all flex items-center justify-center gap-2 text-base cursor-pointer">
-                    <i class="ph-bold ph-download-simple text-xl"></i> Processar via Servidor Neko
+                    <i class="ph-bold ph-magic-wand text-xl"></i> Extrair Mídia Real 🐾
                 </button>
             </div>
 
-            <div id="errorBox" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-500 text-xs flex items-center gap-2">
-                <span class="text-lg">😿</span>
-                <span id="errorText">Por favor, insira um link válido do Instagram!</span>
+            <div id="errorBox" class="hidden mt-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-500 text-sm flex items-center gap-2 text-left">
+                <span class="text-xl">😿</span>
+                <span id="errorText">Erro!</span>
             </div>
 
             <div id="loadingState" class="hidden mt-6 flex flex-col items-center justify-center space-y-3">
                 <div class="text-4xl animate-bounce">🐈‍⬛</div>
-                <p class="text-xs font-semibold text-pink-500 animate-pulse">O gatinho está a analisar o teu link com todo o carinho...</p>
+                <p class="text-xs font-semibold text-pink-500 animate-pulse">Invadindo a nuvem do Instagram para puxar o arquivo...</p>
             </div>
 
             <div id="resultState" class="hidden mt-6 text-left bg-pink-50/80 border border-pink-200 rounded-2xl p-4 space-y-4 shadow-sm">
                 <div class="flex items-center justify-between border-b border-pink-200 pb-2">
-                    <span class="text-xs font-bold text-pink-600 flex items-center gap-1">
-                        <span>🐱✨</span> Link Processado com Sucesso!
+                    <span class="text-xs font-bold text-emerald-600 flex items-center gap-1">
+                        <i class="ph-fill ph-check-circle"></i> Arquivo Capturado!
                     </span>
                     <button onclick="resetApp()" class="text-xs bg-white text-pink-500 border border-pink-200 px-2.5 py-1 rounded-lg font-semibold hover:bg-pink-100">
                         Novo Link 🔄
                     </button>
                 </div>
 
-                <div class="bg-white p-3.5 rounded-xl border border-pink-100 space-y-2 shadow-sm">
-                    <p class="text-xs font-bold text-gray-800">O teu link capturado:</p>
-                    <p class="text-[11px] text-pink-600 break-all bg-pink-50 p-2 rounded-lg border border-pink-100" id="displayUrl">https://instagram.com/...</p>
-                </div>
-
-                <div class="flex items-center justify-between bg-white p-3 rounded-xl border border-pink-100 shadow-sm">
+                <div class="bg-white p-3 rounded-xl border border-pink-100 flex items-center justify-between shadow-sm">
                     <div>
-                        <p class="text-xs font-bold text-gray-800">Status da Mídia</p>
-                        <p class="text-[10px] text-pink-500 font-medium">Pronta para extração em HD Max 🐾</p>
+                        <p class="text-sm font-bold text-gray-800">Mídia Pronta 🐾</p>
+                        <p class="text-[10px] text-gray-500 font-medium">Link direto extraído dos servidores da Meta</p>
                     </div>
-                    <span class="bg-pink-100 text-pink-600 text-xs px-2.5 py-1 rounded-lg font-bold">1080p</span>
+                    <span class="bg-emerald-100 text-emerald-600 text-xs px-2.5 py-1 rounded-lg font-bold">1080p</span>
                 </div>
 
+                <!-- O link agora abrirá/baixará o MP4 real -->
                 <a id="downloadBtn" href="#" target="_blank"
                     class="w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold py-3 px-4 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-sm text-center">
-                    <i class="ph-bold ph-arrow-circle-down text-lg"></i> Abrir Link Processado 🐾
+                    <i class="ph-bold ph-download-simple text-lg"></i> Fazer Download Agora
                 </a>
             </div>
 
-        </div>
-
-        <div class="mt-6 text-center text-xs text-pink-400 font-medium flex items-center justify-center gap-1">
-            Feito com <i class="ph-fill ph-heart text-pink-400"></i> e carinho felino para você! 🐾
         </div>
     </main>
 
@@ -116,14 +108,8 @@
             errorBox.classList.add('hidden');
             resultState.classList.add('hidden');
 
-            if (!urlInput) {
-                errorText.innerText = "Miau! O campo de link está vazio!";
-                errorBox.classList.remove('hidden');
-                return;
-            }
-
-            if (!urlInput.includes('instagram.com')) {
-                errorText.innerText = "Ops! Este link não parece ser do Instagram, gatinho confuso!";
+            if (!urlInput || !urlInput.includes('instagram.com')) {
+                errorText.innerText = "Miau! Cole um link válido do Instagram.";
                 errorBox.classList.remove('hidden');
                 return;
             }
@@ -131,6 +117,7 @@
             loadingState.classList.remove('hidden');
 
             try {
+                // Chama a nossa nova API extratora
                 const response = await fetch('/api/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -146,18 +133,18 @@
                     return;
                 }
 
-                // Exibe exatamente o link que o utilizador colou de forma limpa
-                document.getElementById('displayUrl').innerText = data.originalInput;
-                
+                // Coloca o link do MP4/JPG cru no botão verde
                 const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = data.originalInput;
+                downloadBtn.href = data.mediaUrl;
+                
+                // Força o comportamento de download nativo do telemóvel
+                downloadBtn.setAttribute('download', 'neko_midia'); 
 
                 resultState.classList.remove('hidden');
-                resultState.scrollIntoView({ behavior: 'smooth' });
 
             } catch (err) {
                 loadingState.classList.add('hidden');
-                errorText.innerText = "Miau! Erro de conexão com o servidor Node.js.";
+                errorText.innerText = "Miau! O servidor está a dormir. Tente novamente!";
                 errorBox.classList.remove('hidden');
             }
         }
@@ -166,7 +153,6 @@
             document.getElementById('instaUrl').value = '';
             document.getElementById('resultState').classList.add('hidden');
             document.getElementById('errorBox').classList.add('hidden');
-            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     </script>
 </body>
