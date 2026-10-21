@@ -1,179 +1,368 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NekoDownloader 🐾 - Por uma internet mais limpa</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <style>
-        body { font-family: 'Quicksand', sans-serif; }
-        .kawaii-gradient { background: linear-gradient(135deg, #ffe5ec 0%, #ffc2d1 50%, #ffb3c6 100%); }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            border: 2px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 15px 35px rgba(255, 179, 198, 0.25);
-        }
-        .float-anim { animation: float 3s ease-in-out infinite; }
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-8px); }
-            100% { transform: translateY(0px); }
-        }
-        .paw-pattern {
-            background-color: #fff9fa;
-            background-image: radial-gradient(#ffccd5 1.5px, transparent 1.5px);
-            background-size: 28px 28px;
-        }
-        .input-glow:focus { box-shadow: 0 0 0 4px rgba(255, 179, 198, 0.3); }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff6fa">
+  <meta name="description" content="Neko Downloader: ferramenta para acessar mídias públicas do Instagram.">
+  <title>Neko Downloader ✨</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, sans-serif;
+      color: #353b4a;
+      background-color: #fff7fa;
+      background-image: radial-gradient(#f5c9dc 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+    }
+
+    header {
+      background: rgba(255,255,255,.96);
+      border-radius: 0 0 30px 30px;
+      padding: 22px 18px;
+      box-shadow: 0 5px 25px #edbfd21c;
+    }
+
+    .top {
+      max-width: 760px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .brand {
+      font-size: clamp(19px, 4.5vw, 28px);
+      font-weight: 800;
+      color: #e45eaa;
+    }
+
+    .pill {
+      border: 1px solid #f6dce9;
+      background: #fff2f8;
+      color: #d65b9e;
+      border-radius: 30px;
+      padding: 10px 14px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    main {
+      width: min(620px, calc(100% - 28px));
+      margin: 55px auto;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+      background: rgba(255,255,255,.97);
+      border: 1px solid white;
+      border-radius: 36px;
+      padding: 35px clamp(18px, 5vw, 42px);
+      box-shadow: 0 15px 45px #eab9d51c;
+    }
+
+    .flower {
+      position: absolute;
+      right: 0;
+      top: 0;
+      background: #fff0f7;
+      border-radius: 0 0 0 75px;
+      padding: 17px;
+      font-size: 35px;
+    }
+
+    .insta {
+      display: grid;
+      place-items: center;
+      margin: 0 auto 25px;
+      width: 90px;
+      height: 90px;
+      border: 1px solid #f9edf3;
+      border-radius: 28px;
+      color: #e779b7;
+      font-size: 48px;
+      box-shadow: 0 3px 6px #00000008;
+    }
+
+    h1 {
+      font-size: clamp(25px, 5vw, 35px);
+      margin: 0 0 14px;
+    }
+
+    .subtitle {
+      color: #969ba6;
+      line-height: 1.7;
+      margin: 0 auto 28px;
+    }
+
+    input {
+      display: block;
+      width: 100%;
+      min-width: 0;
+      padding: 18px 16px;
+      font-size: 16px;
+      color: #353b4a;
+      background: white;
+      border: 2px solid #f7dfeb;
+      border-radius: 20px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #e779b7;
+      box-shadow: 0 0 0 3px #e779b71c;
+    }
+
+    button, .download {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 17px 14px;
+      border: 0;
+      border-radius: 20px;
+      background: linear-gradient(110deg, #ffcee2, #f5a5c9);
+      color: white;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      text-decoration: none;
+      box-shadow: 0 7px 15px #e88bb52b;
+    }
+
+    button:disabled {
+      opacity: .65;
+      cursor: wait;
+    }
+
+    .status {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 18px;
+      text-align: left;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .status.show { display: block; }
+    .status.error {
+      background: #fff3f2;
+      color: #c45c68;
+      border: 1px solid #f8dddd;
+    }
+
+    .status.info {
+      background: #fff5fa;
+      color: #8c5071;
+      border: 1px solid #f8deeb;
+    }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 18px;
+      border: 1px solid #f5ddeb;
+      border-radius: 20px;
+      background: #fffafd;
+    }
+
+    .result.show { display: block; }
+    .result p { overflow-wrap: anywhere; }
+    .download { background: #e778b2; }
+
+    .note {
+      margin-top: 25px;
+      color: #a0a3ad;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    footer {
+      padding: 0 20px 30px;
+      text-align: center;
+      color: #aaa0a8;
+      font-size: 12px;
+    }
+
+    @media (max-width: 420px) {
+      main { margin: 30px auto; }
+      .panel { padding-top: 45px; }
+      .pill { font-size: 10px; }
+    }
+  </style>
 </head>
-<body class="paw-pattern min-h-screen flex flex-col justify-between text-gray-700">
 
-    <header class="w-full py-4 px-6 glass-panel flex justify-between items-center sticky top-0 z-50 rounded-b-3xl">
-        <div class="flex items-center space-x-2">
-            <span class="text-3xl float-anim">🐱</span>
-            <h1 class="text-xl font-bold text-pink-500 tracking-wide flex items-center gap-1">
-                Neko<span class="text-pink-300 font-medium">Downloader</span> ✨
-            </h1>
-        </div>
-        <div class="text-[10px] uppercase tracking-wider bg-pink-50 text-pink-500 px-4 py-2 rounded-full font-bold flex items-center gap-1.5 border border-pink-100 float-anim">
-            <i class="ph-fill ph-sparkle text-pink-400 text-sm"></i> Magia Ativa
-        </div>
-    </header>
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">🐱 Neko Downloader ✨</div>
+      <div class="pill">🌸 MAGIA ATIVA</div>
+    </div>
+  </header>
 
-    <main class="flex-1 flex flex-col items-center justify-center p-4 sm:p-6 max-w-xl mx-auto w-full mt-4">
-        <div class="glass-panel rounded-[2.5rem] p-6 sm:p-8 w-full text-center relative overflow-hidden">
-            
-            <div class="absolute -top-6 -right-6 w-24 h-24 bg-gradient-to-br from-pink-100 to-pink-50 rounded-full flex items-center justify-center text-4xl opacity-70 float-anim">
-                🌸
-            </div>
-            <div class="absolute -bottom-8 -left-8 w-32 h-32 bg-gradient-to-tr from-pink-50 to-white rounded-full opacity-60"></div>
+  <main>
+    <section class="panel">
+      <div class="flower" aria-hidden="true">🌸</div>
 
-            <div class="mb-8 relative z-10">
-                <span class="inline-block p-4 bg-white rounded-3xl text-4xl mb-3 text-pink-400 shadow-sm border border-pink-50 float-anim">
-                    <i class="ph-duotone ph-instagram-logo"></i>
-                </span>
-                <h2 class="text-2xl font-bold text-gray-700">Baixe com carinho!</h2>
-                <p class="text-sm text-gray-400 mt-2 font-medium">Por uma internet mais limpa, leve e fofa. Cole o link público abaixo. ☁️</p>
-            </div>
+      <div class="insta" aria-hidden="true">◎</div>
 
-            <div class="space-y-5 relative z-10">
-                <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-pink-300">
-                        <i class="ph-bold ph-link text-xl"></i>
-                    </span>
-                    <input type="url" id="instaUrl" placeholder="https://www.instagram.com/p/..." 
-                        class="w-full pl-12 pr-6 py-4 bg-white/60 border-2 border-pink-100 rounded-2xl focus:outline-none focus:border-pink-300 input-glow text-sm transition-all font-medium text-gray-600 placeholder-gray-400">
-                </div>
+      <h1>Baixe com carinho!</h1>
+      <p class="subtitle">
+        Uma internet mais leve, linda e fofa.
+        Cole abaixo o link de uma publicação pública.
+      </p>
 
-                <button onclick="handleDownload()" id="submitBtn"
-                    class="w-full kawaii-gradient text-white font-bold py-4 px-6 rounded-2xl shadow-md hover:shadow-lg hover:-translate-y-0.5 transform active:scale-95 transition-all flex items-center justify-center gap-2 text-base cursor-pointer border border-pink-200/50">
-                    <i class="ph-bold ph-magic-wand text-xl"></i> Purificar e Extrair Mídia ✨
-                </button>
-            </div>
+      <form id="downloadForm">
+        <label for="instagramUrl"
+          style="display:block;text-align:left;margin-bottom:8px;font-weight:600">
+          🔗 Link do Instagram
+        </label>
 
-            <div id="errorBox" class="hidden mt-5 p-4 bg-red-50/80 border-2 border-red-100 rounded-2xl text-red-400 text-sm flex items-center gap-3 text-left float-anim">
-                <span class="text-2xl">😿</span>
-                <span id="errorText" class="font-medium">Ops, algo deu errado!</span>
-            </div>
+        <input
+          id="instagramUrl"
+          type="url"
+          placeholder="https://www.instagram.com/reel/..."
+          autocomplete="url"
+          required
+          maxlength="2048"
+        >
 
-            <div id="loadingState" class="hidden mt-8 flex flex-col items-center justify-center space-y-4">
-                <div class="text-5xl float-anim">🐈‍⬛</div>
-                <p class="text-sm font-semibold text-pink-400 animate-pulse bg-pink-50/50 px-4 py-2 rounded-full">
-                    Limpando as impurezas e buscando a sua mídia... ✨
-                </p>
-            </div>
+        <button id="submitButton" type="submit">
+          ✨ Purificar e Extrair Mídia
+        </button>
+      </form>
 
-            <div id="resultState" class="hidden mt-8 text-left bg-white/60 border-2 border-pink-100 rounded-[2rem] p-5 space-y-5 shadow-sm">
-                <div class="flex items-center justify-between border-b-2 border-pink-50 pb-3">
-                    <span class="text-sm font-bold text-pink-500 flex items-center gap-2">
-                        <i class="ph-fill ph-stars text-lg text-pink-400"></i> Pronto, purificado!
-                    </span>
-                    <button onclick="resetApp()" class="text-xs bg-white text-pink-400 border-2 border-pink-100 px-3 py-1.5 rounded-xl font-bold hover:bg-pink-50 transition-colors flex items-center gap-1">
-                        Novo <i class="ph-bold ph-arrows-clockwise"></i>
-                    </button>
-                </div>
+      <div id="status" class="status" role="status"
+        aria-live="polite"></div>
 
-                <div class="bg-white p-4 rounded-2xl border border-pink-50 flex items-center justify-between shadow-sm">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 kawaii-gradient rounded-full flex items-center justify-center text-white text-lg shadow-inner">
-                            🐾
-                        </div>
-                        <div>
-                            <p class="text-sm font-bold text-gray-700">Mídia Resgatada</p>
-                            <p class="text-[11px] text-pink-400 font-medium uppercase tracking-wide">Sem rastreadores externos</p>
-                        </div>
-                    </div>
-                </div>
+      <div id="result" class="result">
+        <strong>🐾 Sua mídia está pronta!</strong>
+        <p id="filename"></p>
+        <a id="downloadLink" class="download"
+          href="#" target="_blank" rel="noopener noreferrer">
+          ⬇️ Abrir / baixar mídia
+        </a>
+        <p class="note">
+          Se o vídeo abrir no navegador, use o menu do navegador
+          para baixar ou salvar o arquivo, quando disponível.
+        </p>
+      </div>
 
-                <a id="downloadBtn" href="#" 
-                    class="w-full bg-emerald-400 hover:bg-emerald-500 text-white font-bold py-4 px-4 rounded-2xl shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-sm text-center border border-emerald-300">
-                    <i class="ph-bold ph-download-simple text-xl"></i> Salvar na Galeria com Amor ☁️
-                </a>
-            </div>
+      <p class="note">
+        Funciona conforme a disponibilidade da API e o acesso à publicação.
+        Baixe apenas conteúdo que você tenha autorização para salvar.
+      </p>
+    </section>
+  </main>
 
-        </div>
-    </main>
-    
-    <footer class="text-center py-6 text-xs text-pink-300 font-medium flex items-center justify-center gap-1.5">
-        Mantendo a internet limpa com <i class="ph-fill ph-heart text-pink-400 animate-pulse"></i> e carinho felino.
-    </footer>
+  <footer>Neko Downloader 🐱 · Feito com carinho</footer>
 
-    <script>
-        async function handleDownload() {
-            const urlInput = document.getElementById('instaUrl').value.trim();
-            const errorBox = document.getElementById('errorBox');
-            const errorText = document.getElementById('errorText');
-            const loadingState = document.getElementById('loadingState');
-            const resultState = document.getElementById('resultState');
+  <script>
+    const form = document.getElementById('downloadForm');
+    const input = document.getElementById('instagramUrl');
+    const button = document.getElementById('submitButton');
+    const statusBox = document.getElementById('status');
+    const resultBox = document.getElementById('result');
+    const downloadLink = document.getElementById('downloadLink');
+    const filename = document.getElementById('filename');
 
-            errorBox.classList.add('hidden');
-            resultState.classList.add('hidden');
+    function showStatus(message, type = 'info') {
+      statusBox.textContent = message;
+      statusBox.className = `status show ${type}`;
+    }
 
-            if (!urlInput || !urlInput.includes('instagram.com')) {
-                errorText.innerText = "Miau! Cole um link válido do Instagram para continuarmos.";
-                errorBox.classList.remove('hidden');
-                return;
-            }
+    function hideResult() {
+      resultBox.classList.remove('show');
+      downloadLink.removeAttribute('href');
+    }
 
-            loadingState.classList.remove('hidden');
+    function validInstagramUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' &&
+          ['instagram.com', 'www.instagram.com',
+           'm.instagram.com'].includes(url.hostname);
+      } catch {
+        return false;
+      }
+    }
 
-            try {
-                const response = await fetch('/api/download', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: urlInput })
-                });
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      hideResult();
 
-                const data = await response.json();
-                loadingState.classList.add('hidden');
+      const url = input.value.trim();
 
-                if (!response.ok) {
-                    errorText.innerText = data.error || "A magia falhou. Verifique se o perfil é público!";
-                    errorBox.classList.remove('hidden');
-                    return;
-                }
+      if (!validInstagramUrl(url)) {
+        showStatus('😿 Cole um link HTTPS válido do Instagram.', 'error');
+        return;
+      }
 
-                const downloadBtn = document.getElementById('downloadBtn');
-                downloadBtn.href = `/api/stream?url=${encodeURIComponent(data.mediaUrl)}`;
+      button.disabled = true;
+      button.textContent = '⏳ Extraindo mídia...';
+      showStatus('🌸 Consultando a API. Aguarde um instante.');
 
-                resultState.classList.remove('hidden');
+      try {
+        const response = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
 
-            } catch (err) {
-                loadingState.classList.add('hidden');
-                errorText.innerText = "Nossos gatinhos servidores estão dormindo. Tente novamente!";
-                errorBox.classList.remove('hidden');
-            }
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Não foi possível extrair a mídia.');
         }
 
-        function resetApp() {
-            document.getElementById('instaUrl').value = '';
-            document.getElementById('resultState').classList.add('hidden');
-            document.getElementById('errorBox').classList.add('hidden');
+        if (Array.isArray(data.picker) && data.picker.length) {
+          showStatus('Esta publicação possui várias mídias. Escolha abaixo:', 'info');
+
+          data.picker.forEach((item, index) => {
+            const link = document.createElement('a');
+            link.href = item.url;
+            link.target = '_blank';
+            link.rel = 'noopener noreferrer';
+            link.className = 'download';
+            link.textContent = `Abrir mídia ${index + 1} (${item.type})`;
+            statusBox.appendChild(document.createElement('br'));
+            statusBox.appendChild(link);
+          });
+
+          return;
         }
-    </script>
+
+        if (!data.success || !data.mediaUrl) {
+          throw new Error(data.error || 'A API não retornou um arquivo.');
+        }
+
+        const media = new URL(data.mediaUrl);
+
+        if (media.protocol !== 'https:') {
+          throw new Error('A API retornou um endereço inseguro.');
+        }
+
+        downloadLink.href = media.toString();
+        filename.textContent = data.filename || 'Neko_Download';
+        resultBox.classList.add('show');
+        statusBox.className = 'status';
+        showStatus('✨ Extração concluída! Toque no botão para acessar a mídia.', 'info');
+
+      } catch (error) {
+        showStatus('😿 ' + error.message, 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '✨ Purificar e Extrair Mídia';
+      }
+    });
+  </script>
 </body>
 </html>
