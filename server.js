@@ -10,63 +10,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Função para extrair a mídia direta do Instagram via query pública (?__a=1 ou graphql)
-async function getInstagramMedia(url) {
-    try {
-        // Limpa o link para pegar o código da postagem (shortcode)
-        const match = url.match(/(?:reels?|p|tv)\/([A-Za-z0-9_-]+)/);
-        if (!match) throw new Error("Link do Instagram inválido.");
-
-        const shortcode = match[1];
-
-        // Faz requisição com User-Agent real aos endpoints GraphQL do Instagram
-        const response = await axios.get(`https://www.instagram.com/p/${shortcode}/?__a=1&__d=dis`, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 100.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
-                'Accept': '*/*',
-                'Sec-Fetch-Mode': 'cors'
-            }
-        });
-
-        const items = response.data?.graphql?.shortcode_media || response.data?.items?.[0];
-
-        if (!items) {
-            // Tentativa secundária via endpoint GraphQL público direto
-            const gqlResponse = await axios.get(`https://www.instagram.com/graphql/query/?query_hash=b30553150821034c44933a3e6a987627&variables=${encodeURIComponent(JSON.stringify({ shortcode }))}`, {
-                headers: {
-                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
-                }
-            });
-
-            const mediaData = gqlResponse.data?.data?.shortcode_media;
-            if (mediaData) {
-                const isVideo = mediaData.is_video;
-                const mediaUrl = isVideo ? mediaData.video_url : mediaData.display_url;
-                return { mediaUrl, isVideo };
-            }
-            throw new Error("Não foi possível extrair a mídia.");
-        }
-
-        const isVideo = items.is_video;
-        const mediaUrl = isVideo ? items.video_url : items.display_url;
-
-        return { mediaUrl, isVideo };
-
-    } catch (error) {
-        // Fallback de contingência caso a resposta direta da Meta venha bloqueada
-        // Redireciona a extração diretamente via serviço proxy nativo
-        const cleanShortcode = url.match(/(?:reels?|p|tv)\/([A-Za-z0-9_-]+)/)?.[1];
-        if (cleanShortcode) {
-            return {
-                mediaUrl: `https://instagram.com/p/${cleanShortcode}/media/?size=l`,
-                isVideo: false
-            };
-        }
-        throw error;
-    }
-}
-
-// Rota da API
+// Rota de Extração (Busca o link real do MP4 nos servidores secretos da Meta)
 app.post('/api/download', async (req, res) => {
     const { url } = req.body;
 
@@ -75,23 +19,59 @@ app.post('/api/download', async (req, res) => {
     }
 
     try {
-        const result = await getInstagramMedia(url);
-        
-        res.json({
-            success: true,
-            mediaUrl: result.mediaUrl,
-            isVideo: result.isVideo,
-            title: "Mídia Neko Extraída com Sucesso! 🐾"
+        // Utilizamos a API pública do Cobalt com headers específicos para evitar bloqueios do Render
+        const response = await axios.post('https://api.cobalt.tools/api/json', {
+            url: url
+        }, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Origin': 'https://cobalt.tools',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+            }
         });
 
+        if (response.data && response.data.url) {
+            // Sucesso! Temos o link direto do arquivo (ex: scontent.cdninstagram.com)
+            return res.json({
+                success: true,
+                mediaUrl: response.data.url, 
+                title: "Mídia Neko Extraída! 🐾"
+            });
+        } else {
+            throw new Error("Falha na extração limpa");
+        }
     } catch (error) {
         console.error("Erro na extração:", error.message);
-        res.status(500).json({ 
-            error: 'Ops! O gatinho não conseguiu acessar essa mídia no momento. Certifique-se de que o link é de uma conta pública.' 
+        // Sem plano B com link do Instagram! Se falhar, avisa o usuário.
+        return res.status(500).json({ 
+            error: 'Ops! O Instagram bloqueou a extração. Verifique se o perfil é público.' 
         });
     }
 });
 
+// ROTA MÁGICA: Força o navegador do celular a baixar o arquivo em vez de abrir!
+app.get('/api/stream', async (req, res) => {
+    const fileUrl = req.query.url;
+    if (!fileUrl) return res.status(400).send('URL ausente');
+
+    try {
+        const response = await axios({
+            url: fileUrl,
+            method: 'GET',
+            responseType: 'stream'
+        });
+        
+        // Estes cabeçalhos dizem ao celular: "Isto é um arquivo para salvar na galeria!"
+        res.setHeader('Content-Disposition', 'attachment; filename="Neko_Reels_Kawaii.mp4"');
+        res.setHeader('Content-Type', 'video/mp4');
+        
+        response.data.pipe(res);
+    } catch (error) {
+        res.status(500).send('Erro ao processar o download direto.');
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`🐱 NekoServer rodando na porta ${PORT}`);
+    console.log(`🐱 NekoServer rodando na porta ${PORT} com Forçador de Download!`);
 });
