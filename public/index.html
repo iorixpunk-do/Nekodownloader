@@ -64,13 +64,14 @@
       font-weight: 700;
     }
 
-    input {
+    input, select {
       width: 100%;
       padding: 15px;
       border: 2px solid #f7dfeb;
       border-radius: 15px;
       font-size: 16px;
-      outline-color: #e778b2;
+      background: white;
+      color: #353b4a;
     }
 
     button, .download {
@@ -116,11 +117,22 @@
       border-radius: 18px;
       background: #fffafd;
       overflow-wrap: anywhere;
+      text-align: left;
     }
 
     .result.show { display: block; }
     .preview { width: 100%; margin-top: 12px; border-radius: 12px; }
     .note { color: #969ba6; font-size: 12px; line-height: 1.6; }
+
+    .audio-badge {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 13px;
+      background: #fff0f7;
+      color: #8c5071;
+      font-weight: 750;
+      text-align: center;
+    }
 
     .history-list {
       display: grid;
@@ -143,10 +155,7 @@
       margin-bottom: 5px;
     }
 
-    .history-date {
-      color: #a39aa1;
-      font-size: 12px;
-    }
+    .history-date { color: #a39aa1; font-size: 12px; }
 
     .history-actions {
       display: flex;
@@ -202,7 +211,7 @@
       <div class="cat">😺🌸</div>
       <h1>Baixe com carinho!</h1>
       <p class="subtitle">
-        Cole o link de uma publicação pública do Instagram.
+        Escolha a qualidade ideal para sua mídia.
       </p>
 
       <form id="downloadForm">
@@ -215,23 +224,43 @@
           required
         >
         <button id="submitButton" type="submit">
-          ✨ Purificar e Extrair Mídia
+          ✨ Encontrar qualidades
         </button>
       </form>
 
       <div id="status" class="status" role="status" aria-live="polite"></div>
 
       <div id="result" class="result">
-        <strong>🐾 Sua mídia está pronta!</strong>
+        <strong>🐾 Escolha sua versão!</strong>
+
+        <label for="qualitySelect">🎬 Qualidade do vídeo</label>
+        <select id="qualitySelect"></select>
+
+        <div id="audioBadge" class="audio-badge">
+          ❔ Áudio não confirmado
+        </div>
+
         <p id="filename"></p>
-        <video id="preview" class="preview" controls playsinline hidden></video>
-        <a id="downloadLink" class="download"
-           target="_blank" rel="noopener noreferrer">
-          ⬇️ Abrir / baixar mídia
-        </a>
+
+        <video
+          id="preview"
+          class="preview"
+          controls
+          playsinline
+          preload="metadata"
+          hidden
+        ></video>
+
+        <a
+          id="downloadLink"
+          class="download"
+          target="_blank"
+          rel="noopener noreferrer"
+        >⬇️ Abrir / baixar versão escolhida</a>
+
         <p class="note">
-          Se o vídeo abrir no navegador, use o menu para baixá-lo,
-          quando essa opção estiver disponível.
+          O áudio só será indicado como confirmado quando a API fornecer
+          essa informação. A prévia pode não reproduzir todos os links.
         </p>
       </div>
 
@@ -243,9 +272,7 @@
     <section class="history-panel">
       <h2>🎀 Meu cantinho de downloads</h2>
       <p class="subtitle">Suas mídias recentes ficam guardadinhas aqui. 🐾</p>
-
       <div id="historyList" class="history-list"></div>
-
       <button id="clearHistory" class="secondary" type="button">
         🗑️ Limpar histórico
       </button>
@@ -264,11 +291,15 @@
     const link = document.getElementById('downloadLink');
     const filename = document.getElementById('filename');
     const preview = document.getElementById('preview');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const audioBadge = document.getElementById('audioBadge');
     const historyList = document.getElementById('historyList');
     const clearHistoryButton = document.getElementById('clearHistory');
 
     const STORAGE_KEY = 'neko_download_history_v1';
     const MAX_HISTORY = 30;
+    let currentMedias = [];
+    let currentInstagramUrl = '';
 
     function showStatus(message, type = 'info') {
       statusBox.textContent = message;
@@ -298,27 +329,24 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
         return true;
       } catch {
-        showStatus(
-          '⚠️ Não foi possível salvar o histórico neste dispositivo.',
-          'error'
-        );
+        showStatus('⚠️ Não foi possível salvar o histórico.', 'error');
         return false;
       }
     }
 
     function renderHistory() {
-      const items = getHistory();
       historyList.replaceChildren();
+      const items = getHistory();
 
       if (!items.length) {
         const empty = document.createElement('div');
         empty.className = 'empty';
-        empty.textContent = '🌸 Ainda não há downloads por aqui. Vamos começar?';
+        empty.textContent = '🌸 Ainda não há downloads por aqui.';
         historyList.appendChild(empty);
         return;
       }
 
-      items.forEach((item) => {
+      items.forEach(item => {
         const card = document.createElement('article');
         card.className = 'history-item';
 
@@ -328,7 +356,6 @@
 
         const date = document.createElement('div');
         date.className = 'history-date';
-
         const parsedDate = new Date(item.date);
         date.textContent = Number.isNaN(parsedDate.getTime())
           ? 'Download anterior'
@@ -338,26 +365,23 @@
         actions.className = 'history-actions';
 
         const openLink = document.createElement('a');
-        const validMediaUrl = safeUrl(item.url);
+        const validUrl = safeUrl(item.url);
 
-        if (validMediaUrl) {
-          openLink.href = validMediaUrl;
+        if (validUrl) {
+          openLink.href = validUrl;
           openLink.target = '_blank';
           openLink.rel = 'noopener noreferrer';
           openLink.textContent = '⬇️ Abrir mídia';
         } else {
           openLink.textContent = 'Link indisponível';
-          openLink.style.opacity = '.6';
           openLink.style.pointerEvents = 'none';
         }
 
         const removeButton = document.createElement('button');
         removeButton.type = 'button';
-        removeButton.className = 'secondary';
         removeButton.textContent = '✖ Remover';
         removeButton.addEventListener('click', () => {
-          const remaining = getHistory().filter(entry => entry.id !== item.id);
-          saveHistory(remaining);
+          saveHistory(getHistory().filter(entry => entry.id !== item.id));
           renderHistory();
         });
 
@@ -367,37 +391,78 @@
       });
     }
 
-    function addToHistory(name, url) {
+    function addToHistory(name, url, quality) {
       const items = getHistory();
 
-      const newItem = {
+      items.unshift({
         id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
         name: String(name || 'Neko_Download').slice(0, 180),
+        quality: quality || '',
         url,
         date: new Date().toISOString()
-      };
+      });
 
-      items.unshift(newItem);
       saveHistory(items.slice(0, MAX_HISTORY));
       renderHistory();
     }
 
     clearHistoryButton.addEventListener('click', () => {
-      const items = getHistory();
-
-      if (!items.length) {
+      if (!getHistory().length) {
         showStatus('🌸 Seu histórico já está vazio!');
         return;
       }
 
-      if (confirm('🐱 Quer mesmo apagar todo o histórico de downloads?')) {
+      if (confirm('🐱 Quer mesmo apagar todo o histórico?')) {
         saveHistory([]);
         renderHistory();
-        showStatus('💗 Histórico limpo com sucesso!');
+        showStatus('💗 Histórico limpo!');
       }
     });
 
-    form.addEventListener('submit', async (event) => {
+    function audioDescription(value) {
+      if (value === true) return '🔊 Áudio confirmado pela API';
+      if (value === false) return '🔇 API indica ausência de áudio';
+      return '❔ Áudio não confirmado';
+    }
+
+    function renderSelectedMedia() {
+      const index = Number(qualitySelect.value);
+      const media = currentMedias[index];
+
+      if (!media || !safeUrl(media.url)) return;
+
+      link.href = media.url;
+      audioBadge.textContent = audioDescription(media.audio);
+
+      const dimensions = media.width && media.height
+        ? ` · ${media.width}×${media.height}`
+        : '';
+
+      filename.textContent =
+        `${media.quality || 'Qualidade não informada'}${dimensions}`;
+
+      preview.pause();
+      preview.removeAttribute('src');
+      preview.load();
+
+      preview.src = media.url;
+      preview.hidden = false;
+    }
+
+    qualitySelect.addEventListener('change', renderSelectedMedia);
+
+    link.addEventListener('click', () => {
+      const media = currentMedias[Number(qualitySelect.value)];
+      if (!media || !safeUrl(media.url)) return;
+
+      addToHistory(
+        media.filename || 'Neko_Download',
+        media.url,
+        media.quality
+      );
+    });
+
+    form.addEventListener('submit', async event => {
       event.preventDefault();
       result.classList.remove('show');
       statusBox.className = 'status';
@@ -426,8 +491,8 @@
       }
 
       button.disabled = true;
-      button.textContent = '⏳ Extraindo mídia...';
-      showStatus('🌸 Consultando a API. Aguarde um instante.');
+      button.textContent = '⏳ Consultando...';
+      showStatus('🌸 Procurando as versões disponíveis...');
 
       try {
         const response = await fetch('/api/download', {
@@ -438,69 +503,74 @@
 
         const data = await response.json().catch(() => ({}));
 
-        if (!response.ok) {
+        if (!response.ok || data.success === false) {
           const message = typeof data.error === 'string'
             ? data.error
-            : typeof data.message === 'string'
-              ? data.message
-              : 'Falha ao consultar a API.';
+            : 'Não foi possível obter as versões desse vídeo.';
           throw new Error(message);
         }
 
-        if (data.success === false) {
-          const message = typeof data.error === 'string'
-            ? data.error
-            : 'A API não conseguiu extrair essa mídia.';
-          throw new Error(message);
-        }
-
-        const medias = Array.isArray(data.medias) ? data.medias :
-                       Array.isArray(data.picker) ? data.picker : [];
-
-        const validMedias = medias.filter(item =>
-          item && typeof item.url === 'string' && safeUrl(item.url)
+        const medias = Array.isArray(data.medias) ? data.medias : [];
+        currentMedias = medias.filter(
+          media => media && safeUrl(media.url) && media.type === 'video'
         );
 
-        const firstMedia = validMedias[0] || null;
-        const candidateUrl =
-          data.mediaUrl || data.download_url || data.url ||
-          (firstMedia ? firstMedia.url : null);
-
-        const mediaUrl = candidateUrl ? safeUrl(candidateUrl) : null;
-
-        if (!mediaUrl) {
-          throw new Error('A API não retornou um link de mídia válido.');
+        if (!currentMedias.length) {
+          const fallback = safeUrl(data.download_url || data.url);
+          if (fallback) {
+            currentMedias = [{
+              url: fallback,
+              type: 'video',
+              quality: 'Versão disponível',
+              audio: null,
+              filename: 'Neko_Download'
+            }];
+          }
         }
 
-        const mediaName = String(data.filename || 'Neko_Download');
-
-        link.href = mediaUrl;
-        filename.textContent = mediaName;
-
-        const mediaType = String(firstMedia?.type || '').toLowerCase();
-        const isVideo = mediaType === 'video' ||
-                        mediaType === 'mp4' ||
-                        /\.(mp4|webm)(?:[?#]|$)/i.test(mediaUrl);
-
-        if (isVideo) {
-          preview.src = mediaUrl;
-          preview.hidden = false;
-        } else {
-          preview.pause();
-          preview.removeAttribute('src');
-          preview.load();
-          preview.hidden = true;
+        if (!currentMedias.length) {
+          throw new Error('A API não retornou versões de vídeo válidas.');
         }
+
+        currentInstagramUrl = instagramUrl.href;
+        qualitySelect.replaceChildren();
+
+        currentMedias.forEach((media, index) => {
+          const option = document.createElement('option');
+          option.value = String(index);
+
+          const dimensions = media.width && media.height
+            ? ` (${media.width}×${media.height})`
+            : '';
+
+          const audioLabel = media.audio === true
+            ? ' · 🔊 Com áudio'
+            : media.audio === false
+              ? ' · 🔇 Sem áudio'
+              : ' · ❔ Áudio não confirmado';
+
+          option.textContent =
+            `${media.quality || 'Qualidade não informada'}${dimensions}${audioLabel}`;
+
+          qualitySelect.appendChild(option);
+        });
+
+        // O servidor ordena primeiro versões com áudio confirmado,
+        // depois pela resolução disponível.
+        qualitySelect.value = '0';
+        renderSelectedMedia();
 
         result.classList.add('show');
-        addToHistory(mediaName, mediaUrl);
-        showStatus('✨ Extração concluída! Sua mídia está pronta.');
+        showStatus(
+          `✨ Encontramos ${currentMedias.length} versão(ões). Escolha a qualidade desejada.`
+        );
 
       } catch (error) {
-        showStatus('😿 ' + (error.message || 'Ocorreu um erro inesperado.'), 'error');
+        currentMedias = [];
+        showStatus('😿 ' + (error.message || 'Ocorreu um erro.'), 'error');
       } finally {
         button.disabled = false;
-        button.textContent = '✨ Purificar e Extrair Mídia';
+        button.textContent = '✨ Encontrar qualidades';
       }
     });
 
