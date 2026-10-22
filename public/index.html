@@ -1,223 +1,587 @@
-<!-- Neko: gatinho interativo -->
-<div id="neko-pet" aria-label="Gatinho interativo" role="button" tabindex="0">
-  <div id="neko-bubble">Nyaa! 🐾</div>
-  <div id="neko-cat">
-    <div class="neko-ears">
-      <span class="neko-ear"></span>
-      <span class="neko-ear"></span>
-    </div>
-    <div class="neko-face">
-      <span class="neko-eye">•</span>
-      <span class="neko-eye">•</span>
-      <span class="neko-nose">♥</span>
-      <span class="neko-mouth">ᴗ</span>
-      <span class="neko-whiskers left">≋</span>
-      <span class="neko-whiskers right">≋</span>
-    </div>
-    <div class="neko-body">🐾</div>
-  </div>
-</div>
 
-<style>
-  #neko-pet {
-    position: fixed;
-    right: 14px;
-    bottom: 14px;
-    width: 94px;
-    z-index: 9999;
-    cursor: pointer;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    text-align: center;
-    font-family: system-ui, sans-serif;
-  }
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#fff6fa">
+  <meta name="description" content="Neko Downloader: baixe mídias públicas do Instagram.">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <title>Neko Downloader 🐱</title>
 
-  #neko-pet * { box-sizing: border-box; }
+  <style>
+    * { box-sizing: border-box; }
 
-  #neko-bubble {
-    display: none;
-    margin-bottom: 7px;
-    padding: 7px 10px;
-    border: 1px solid #f3b7d7;
-    border-radius: 14px;
-    background: #fff0f8;
-    color: #a52b70;
-    font-size: 12px;
-    font-weight: 700;
-    box-shadow: 0 3px 12px #0002;
-  }
-
-  #neko-pet.talking #neko-bubble {
-    display: inline-block;
-    animation: neko-pop .25s ease-out;
-  }
-
-  #neko-cat {
-    position: relative;
-    width: 82px;
-    height: 91px;
-    margin: auto;
-    filter: drop-shadow(0 4px 5px #0003);
-    animation: neko-float 3s ease-in-out infinite;
-  }
-
-  .neko-ears {
-    position: absolute;
-    top: 4px;
-    left: 12px;
-    width: 58px;
-    display: flex;
-    justify-content: space-between;
-  }
-
-  .neko-ear {
-    width: 26px;
-    height: 30px;
-    background: #ffcae4;
-    border: 3px solid #a94779;
-    border-radius: 12px 12px 4px 4px;
-    transform: rotate(-12deg);
-  }
-
-  .neko-ear + .neko-ear {
-    transform: rotate(12deg);
-  }
-
-  .neko-face {
-    position: absolute;
-    top: 18px;
-    left: 5px;
-    width: 72px;
-    height: 57px;
-    background: #fff0f8;
-    border: 3px solid #a94779;
-    border-radius: 45% 45% 48% 48%;
-  }
-
-  .neko-eye {
-    position: absolute;
-    top: 17px;
-    left: 17px;
-    color: #66314d;
-    font-size: 23px;
-    line-height: 14px;
-    font-weight: 900;
-  }
-
-  .neko-eye + .neko-eye {
-    left: 43px;
-  }
-
-  .neko-nose {
-    position: absolute;
-    top: 29px;
-    left: 31px;
-    color: #e76ca9;
-    font-size: 10px;
-  }
-
-  .neko-mouth {
-    position: absolute;
-    top: 34px;
-    left: 29px;
-    color: #a94779;
-    font-size: 13px;
-    font-weight: bold;
-  }
-
-  .neko-whiskers {
-    position: absolute;
-    top: 27px;
-    color: #d77cac;
-    font-size: 15px;
-    letter-spacing: -4px;
-  }
-
-  .neko-whiskers.left { left: -10px; }
-  .neko-whiskers.right { right: -6px; }
-
-  .neko-body {
-    position: absolute;
-    bottom: 0;
-    left: 25px;
-    width: 32px;
-    height: 27px;
-    border-radius: 15px 15px 8px 8px;
-    background: #ffcae4;
-    border: 3px solid #a94779;
-    color: #a94779;
-    font-size: 15px;
-    line-height: 22px;
-  }
-
-  #neko-pet.petted .neko-ear {
-    animation: neko-ear-wiggle .35s ease-in-out 2;
-  }
-
-  #neko-pet.petted .neko-eye {
-    animation: neko-blink .35s ease-in-out;
-  }
-
-  @keyframes neko-float {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-5px); }
-  }
-
-  @keyframes neko-pop {
-    from { transform: scale(.7); opacity: 0; }
-    to { transform: scale(1); opacity: 1; }
-  }
-
-  @keyframes neko-ear-wiggle {
-    0%, 100% { rotate: 0deg; }
-    50% { rotate: -13deg; }
-  }
-
-  @keyframes neko-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: .15; }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    #neko-cat { animation: none; }
-    #neko-pet * { transition: none !important; }
-  }
-</style>
-
-<script>
-(() => {
-  const pet = document.getElementById('neko-pet');
-  if (!pet || pet.dataset.ready) return;
-  pet.dataset.ready = 'true';
-
-  const bubble = document.getElementById('neko-bubble');
-  const messages = [
-    'Nyaa! 🐾',
-    'Oi, humano! 💗',
-    'Vamos baixar? 😺',
-    'Miau miau!',
-    'Você é legal! 🌸'
-  ];
-  let hideTimer;
-
-  function petCat() {
-    bubble.textContent = messages[Math.floor(Math.random() * messages.length)];
-    pet.classList.remove('petted', 'talking');
-    void pet.offsetWidth;
-    pet.classList.add('petted', 'talking');
-
-    clearTimeout(hideTimer);
-    hideTimer = setTimeout(() => {
-      pet.classList.remove('talking', 'petted');
-    }, 2200);
-  }
-
-  pet.addEventListener('click', petCat);
-  pet.addEventListener('keydown', event => {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      petCat();
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      color: #353b4a;
+      background: #fff7fa;
+      background-image: radial-gradient(#f5c9dc 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
     }
-  });
-})();
-</script>
+
+    header {
+      background: white;
+      padding: 20px;
+      border-radius: 0 0 25px 25px;
+      box-shadow: 0 5px 20px #edbfd222;
+    }
+
+    .brand {
+      max-width: 650px;
+      margin: auto;
+      font-size: 25px;
+      font-weight: 850;
+      color: #e45eaa;
+    }
+
+    main {
+      width: min(600px, calc(100% - 28px));
+      margin: 25px auto;
+    }
+
+    .panel, .history-panel {
+      background: white;
+      border-radius: 28px;
+      padding: 26px 20px;
+      text-align: center;
+      box-shadow: 0 15px 45px #eab9d522;
+      margin-bottom: 20px;
+    }
+
+    .cat { font-size: 58px; margin-bottom: 8px; }
+    h1 { font-size: 28px; margin: 8px 0; }
+    h2 { font-size: 21px; margin: 0; color: #e45eaa; }
+    .subtitle { color: #969ba6; line-height: 1.6; }
+
+    label {
+      display: block;
+      text-align: left;
+      margin: 22px 0 8px;
+      font-weight: 700;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #f7dfeb;
+      border-radius: 15px;
+      font-size: 16px;
+      background: white;
+      color: #353b4a;
+    }
+
+    button, .download {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 14px;
+      border: 0;
+      border-radius: 15px;
+      background: linear-gradient(110deg, #ffcee2, #e778b2);
+      color: white;
+      font-size: 15px;
+      font-weight: 800;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: .6; }
+
+    .secondary {
+      background: #fff0f7;
+      color: #b84e87;
+    }
+
+    .status {
+      display: none;
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 14px;
+      overflow-wrap: anywhere;
+      text-align: left;
+    }
+
+    .status.show { display: block; }
+    .info { background: #fff0f7; color: #8c5071; }
+    .error { background: #fff0f0; color: #b43d55; }
+
+    .result {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border: 1px solid #f5ddeb;
+      border-radius: 18px;
+      background: #fffafd;
+      overflow-wrap: anywhere;
+      text-align: left;
+    }
+
+    .result.show { display: block; }
+    .preview { width: 100%; margin-top: 12px; border-radius: 12px; }
+    .note { color: #969ba6; font-size: 12px; line-height: 1.6; }
+
+    .audio-badge {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 13px;
+      background: #fff0f7;
+      color: #8c5071;
+      font-weight: 750;
+      text-align: center;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    .history-item {
+      padding: 15px;
+      background: #fff7fb;
+      border: 1px solid #f7dfeb;
+      border-radius: 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .history-name {
+      font-weight: 800;
+      color: #9e4e7a;
+      margin-bottom: 5px;
+    }
+
+    .history-date { color: #a39aa1; font-size: 12px; }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .history-actions a,
+    .history-actions button {
+      flex: 1;
+      width: auto;
+      margin-top: 5px;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .history-actions a {
+      border-radius: 12px;
+      background: #e778b2;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .history-actions button {
+      background: #fff0f7;
+      color: #b84e87;
+    }
+
+    .empty {
+      padding: 20px 8px;
+      color: #a39aa1;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #aaa0a8;
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">🐱 Neko Downloader ✨</div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <div class="cat">😺🌸</div>
+      <h1>Baixe com carinho!</h1>
+      <p class="subtitle">
+        Escolha a qualidade ideal para sua mídia.
+      </p>
+
+      <form id="downloadForm">
+        <label for="instagramUrl">🔗 Link do Instagram</label>
+        <input
+          id="instagramUrl"
+          type="url"
+          placeholder="https://www.instagram.com/reel/..."
+          autocomplete="url"
+          required
+        >
+        <button id="submitButton" type="submit">
+          ✨ Encontrar qualidades
+        </button>
+      </form>
+
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+
+      <div id="result" class="result">
+        <strong>🐾 Escolha sua versão!</strong>
+
+        <label for="qualitySelect">🎬 Qualidade do vídeo</label>
+        <select id="qualitySelect"></select>
+
+        <div id="audioBadge" class="audio-badge">
+          ❔ Áudio não confirmado
+        </div>
+
+        <p id="filename"></p>
+
+        <video
+          id="preview"
+          class="preview"
+          controls
+          playsinline
+          preload="metadata"
+          hidden
+        ></video>
+
+        <a
+          id="downloadLink"
+          class="download"
+          target="_blank"
+          rel="noopener noreferrer"
+        >⬇️ Abrir / baixar versão escolhida</a>
+
+        <p class="note">
+          O áudio só será indicado como confirmado quando a API fornecer
+          essa informação. A prévia pode não reproduzir todos os links.
+        </p>
+      </div>
+
+      <p class="note">
+        Baixe apenas conteúdo que você tenha autorização para salvar.
+      </p>
+    </section>
+
+    <section class="history-panel">
+      <h2>🎀 Meu cantinho de downloads</h2>
+      <p class="subtitle">Suas mídias recentes ficam guardadinhas aqui. 🐾</p>
+      <div id="historyList" class="history-list"></div>
+      <button id="clearHistory" class="secondary" type="button">
+        🗑️ Limpar histórico
+      </button>
+      <p class="note">O histórico fica salvo neste dispositivo e navegador.</p>
+    </section>
+  </main>
+
+  <footer>Neko Downloader 🐱 · Feito com carinho 💗</footer>
+
+  <script>
+    const form = document.getElementById('downloadForm');
+    const input = document.getElementById('instagramUrl');
+    const button = document.getElementById('submitButton');
+    const statusBox = document.getElementById('status');
+    const result = document.getElementById('result');
+    const link = document.getElementById('downloadLink');
+    const filename = document.getElementById('filename');
+    const preview = document.getElementById('preview');
+    const qualitySelect = document.getElementById('qualitySelect');
+    const audioBadge = document.getElementById('audioBadge');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryButton = document.getElementById('clearHistory');
+
+    const STORAGE_KEY = 'neko_download_history_v1';
+    const MAX_HISTORY = 30;
+    let currentMedias = [];
+    let currentInstagramUrl = '';
+
+    function showStatus(message, type = 'info') {
+      statusBox.textContent = message;
+      statusBox.className = 'status show ' + type;
+    }
+
+    function safeUrl(value) {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' ? url.href : null;
+      } catch {
+        return null;
+      }
+    }
+
+    function getHistory() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(items) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        return true;
+      } catch {
+        showStatus('⚠️ Não foi possível salvar o histórico.', 'error');
+        return false;
+      }
+    }
+
+    function renderHistory() {
+      historyList.replaceChildren();
+      const items = getHistory();
+
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '🌸 Ainda não há downloads por aqui.';
+        historyList.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('article');
+        card.className = 'history-item';
+
+        const name = document.createElement('div');
+        name.className = 'history-name';
+        name.textContent = '🐾 ' + (item.name || 'Neko_Download');
+
+        const date = document.createElement('div');
+        date.className = 'history-date';
+        const parsedDate = new Date(item.date);
+        date.textContent = Number.isNaN(parsedDate.getTime())
+          ? 'Download anterior'
+          : parsedDate.toLocaleString('pt-BR');
+
+        const actions = document.createElement('div');
+        actions.className = 'history-actions';
+
+        const openLink = document.createElement('a');
+        const validUrl = safeUrl(item.url);
+
+        if (validUrl) {
+          openLink.href = validUrl;
+          openLink.target = '_blank';
+          openLink.rel = 'noopener noreferrer';
+          openLink.textContent = '⬇️ Abrir mídia';
+        } else {
+          openLink.textContent = 'Link indisponível';
+          openLink.style.pointerEvents = 'none';
+        }
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.textContent = '✖ Remover';
+        removeButton.addEventListener('click', () => {
+          saveHistory(getHistory().filter(entry => entry.id !== item.id));
+          renderHistory();
+        });
+
+        actions.append(openLink, removeButton);
+        card.append(name, date, actions);
+        historyList.appendChild(card);
+      });
+    }
+
+    function addToHistory(name, url, quality) {
+      const items = getHistory();
+
+      items.unshift({
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
+        name: String(name || 'Neko_Download').slice(0, 180),
+        quality: quality || '',
+        url,
+        date: new Date().toISOString()
+      });
+
+      saveHistory(items.slice(0, MAX_HISTORY));
+      renderHistory();
+    }
+
+    clearHistoryButton.addEventListener('click', () => {
+      if (!getHistory().length) {
+        showStatus('🌸 Seu histórico já está vazio!');
+        return;
+      }
+
+      if (confirm('🐱 Quer mesmo apagar todo o histórico?')) {
+        saveHistory([]);
+        renderHistory();
+        showStatus('💗 Histórico limpo!');
+      }
+    });
+
+    function audioDescription(value) {
+      if (value === true) return '🔊 Áudio confirmado pela API';
+      if (value === false) return '🔇 API indica ausência de áudio';
+      return '❔ Áudio não confirmado';
+    }
+
+    function renderSelectedMedia() {
+      const index = Number(qualitySelect.value);
+      const media = currentMedias[index];
+
+      if (!media || !safeUrl(media.url)) return;
+
+      link.href = media.url;
+      audioBadge.textContent = audioDescription(media.audio);
+
+      const dimensions = media.width && media.height
+        ? ` · ${media.width}×${media.height}`
+        : '';
+
+      filename.textContent =
+        `${media.quality || 'Qualidade não informada'}${dimensions}`;
+
+      preview.pause();
+      preview.removeAttribute('src');
+      preview.load();
+
+      preview.src = media.url;
+      preview.hidden = false;
+    }
+
+    qualitySelect.addEventListener('change', renderSelectedMedia);
+
+    link.addEventListener('click', () => {
+      const media = currentMedias[Number(qualitySelect.value)];
+      if (!media || !safeUrl(media.url)) return;
+
+      addToHistory(
+        media.filename || 'Neko_Download',
+        media.url,
+        media.quality
+      );
+    });
+
+    form.addEventListener('submit', async event => {
+      event.preventDefault();
+      result.classList.remove('show');
+      statusBox.className = 'status';
+
+      let instagramUrl;
+
+      try {
+        instagramUrl = new URL(input.value.trim());
+      } catch {
+        showStatus('😿 Cole um link válido do Instagram.', 'error');
+        return;
+      }
+
+      const allowedHosts = [
+        'instagram.com',
+        'www.instagram.com',
+        'm.instagram.com'
+      ];
+
+      if (
+        instagramUrl.protocol !== 'https:' ||
+        !allowedHosts.includes(instagramUrl.hostname.toLowerCase())
+      ) {
+        showStatus('😿 Cole um link HTTPS válido do Instagram.', 'error');
+        return;
+      }
+
+      button.disabled = true;
+      button.textContent = '⏳ Consultando...';
+      showStatus('🌸 Procurando as versões disponíveis...');
+
+      try {
+        const response = await fetch('/api/download', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: instagramUrl.href })
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success === false) {
+          const message = typeof data.error === 'string'
+            ? data.error
+            : 'Não foi possível obter as versões desse vídeo.';
+          throw new Error(message);
+        }
+
+        const medias = Array.isArray(data.medias) ? data.medias : [];
+        currentMedias = medias.filter(
+          media => media && safeUrl(media.url) && media.type === 'video'
+        );
+
+        if (!currentMedias.length) {
+          const fallback = safeUrl(data.download_url || data.url);
+          if (fallback) {
+            currentMedias = [{
+              url: fallback,
+              type: 'video',
+              quality: 'Versão disponível',
+              audio: null,
+              filename: 'Neko_Download'
+            }];
+          }
+        }
+
+        if (!currentMedias.length) {
+          throw new Error('A API não retornou versões de vídeo válidas.');
+        }
+
+        currentInstagramUrl = instagramUrl.href;
+        qualitySelect.replaceChildren();
+
+        currentMedias.forEach((media, index) => {
+          const option = document.createElement('option');
+          option.value = String(index);
+
+          const dimensions = media.width && media.height
+            ? ` (${media.width}×${media.height})`
+            : '';
+
+          const audioLabel = media.audio === true
+            ? ' · 🔊 Com áudio'
+            : media.audio === false
+              ? ' · 🔇 Sem áudio'
+              : ' · ❔ Áudio não confirmado';
+
+          option.textContent =
+            `${media.quality || 'Qualidade não informada'}${dimensions}${audioLabel}`;
+
+          qualitySelect.appendChild(option);
+        });
+
+        // O servidor ordena primeiro versões com áudio confirmado,
+        // depois pela resolução disponível.
+        qualitySelect.value = '0';
+        renderSelectedMedia();
+
+        result.classList.add('show');
+        showStatus(
+          `✨ Encontramos ${currentMedias.length} versão(ões). Escolha a qualidade desejada.`
+        );
+
+      } catch (error) {
+        currentMedias = [];
+        showStatus('😿 ' + (error.message || 'Ocorreu um erro.'), 'error');
+      } finally {
+        button.disabled = false;
+        button.textContent = '✨ Encontrar qualidades';
+      }
+    });
+
+    renderHistory();
+
+    if ('serviceWorker' in navigator && location.protocol === 'https:') {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .catch(error => console.error('Erro no Service Worker:', error));
+      });
+    }
+  </script>
+</body>
+</html>
