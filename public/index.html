@@ -12,6 +12,7 @@
 
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -21,12 +22,14 @@
       background-image: radial-gradient(#f5c9dc 1.5px, transparent 1.5px);
       background-size: 32px 32px;
     }
+
     header {
       background: white;
       padding: 20px;
       border-radius: 0 0 25px 25px;
       box-shadow: 0 5px 20px #edbfd222;
     }
+
     .brand {
       max-width: 650px;
       margin: auto;
@@ -34,38 +37,47 @@
       font-weight: 850;
       color: #e45eaa;
     }
+
     main {
       width: min(600px, calc(100% - 28px));
-      margin: 35px auto;
+      margin: 25px auto;
     }
-    .panel {
+
+    .panel, .history-panel {
       background: white;
       border-radius: 28px;
-      padding: 30px 22px;
+      padding: 26px 20px;
       text-align: center;
       box-shadow: 0 15px 45px #eab9d522;
+      margin-bottom: 20px;
     }
-    .cat { font-size: 60px; margin-bottom: 8px; }
-    h1 { font-size: 30px; margin: 8px 0; }
+
+    .cat { font-size: 58px; margin-bottom: 8px; }
+    h1 { font-size: 28px; margin: 8px 0; }
+    h2 { font-size: 21px; margin: 0; color: #e45eaa; }
     .subtitle { color: #969ba6; line-height: 1.6; }
+
     label {
       display: block;
       text-align: left;
       margin: 22px 0 8px;
       font-weight: 700;
     }
+
     input {
       width: 100%;
       padding: 15px;
       border: 2px solid #f7dfeb;
       border-radius: 15px;
       font-size: 16px;
+      outline-color: #e778b2;
     }
+
     button, .download {
       display: block;
       width: 100%;
       margin-top: 12px;
-      padding: 15px;
+      padding: 14px;
       border: 0;
       border-radius: 15px;
       background: linear-gradient(110deg, #ffcee2, #e778b2);
@@ -75,7 +87,14 @@
       text-decoration: none;
       cursor: pointer;
     }
+
     button:disabled { opacity: .6; }
+
+    .secondary {
+      background: #fff0f7;
+      color: #b84e87;
+    }
+
     .status {
       display: none;
       margin-top: 18px;
@@ -84,9 +103,11 @@
       overflow-wrap: anywhere;
       text-align: left;
     }
+
     .status.show { display: block; }
     .info { background: #fff0f7; color: #8c5071; }
     .error { background: #fff0f0; color: #b43d55; }
+
     .result {
       display: none;
       margin-top: 20px;
@@ -96,10 +117,78 @@
       background: #fffafd;
       overflow-wrap: anywhere;
     }
+
     .result.show { display: block; }
     .preview { width: 100%; margin-top: 12px; border-radius: 12px; }
     .note { color: #969ba6; font-size: 12px; line-height: 1.6; }
-    footer { text-align: center; padding: 20px; color: #aaa0a8; font-size: 12px; }
+
+    .history-list {
+      display: grid;
+      gap: 12px;
+      margin-top: 18px;
+      text-align: left;
+    }
+
+    .history-item {
+      padding: 15px;
+      background: #fff7fb;
+      border: 1px solid #f7dfeb;
+      border-radius: 17px;
+      overflow-wrap: anywhere;
+    }
+
+    .history-name {
+      font-weight: 800;
+      color: #9e4e7a;
+      margin-bottom: 5px;
+    }
+
+    .history-date {
+      color: #a39aa1;
+      font-size: 12px;
+    }
+
+    .history-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .history-actions a,
+    .history-actions button {
+      flex: 1;
+      width: auto;
+      margin-top: 5px;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .history-actions a {
+      border-radius: 12px;
+      background: #e778b2;
+      color: white;
+      text-decoration: none;
+      font-weight: 800;
+    }
+
+    .history-actions button {
+      background: #fff0f7;
+      color: #b84e87;
+    }
+
+    .empty {
+      padding: 20px 8px;
+      color: #a39aa1;
+      line-height: 1.6;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      color: #aaa0a8;
+      font-size: 12px;
+    }
   </style>
 </head>
 
@@ -122,6 +211,7 @@
           id="instagramUrl"
           type="url"
           placeholder="https://www.instagram.com/reel/..."
+          autocomplete="url"
           required
         >
         <button id="submitButton" type="submit">
@@ -135,8 +225,10 @@
         <strong>🐾 Sua mídia está pronta!</strong>
         <p id="filename"></p>
         <video id="preview" class="preview" controls playsinline hidden></video>
-        <a id="downloadLink" class="download" target="_blank"
-           rel="noopener noreferrer">⬇️ Abrir / baixar mídia</a>
+        <a id="downloadLink" class="download"
+           target="_blank" rel="noopener noreferrer">
+          ⬇️ Abrir / baixar mídia
+        </a>
         <p class="note">
           Se o vídeo abrir no navegador, use o menu para baixá-lo,
           quando essa opção estiver disponível.
@@ -147,9 +239,21 @@
         Baixe apenas conteúdo que você tenha autorização para salvar.
       </p>
     </section>
+
+    <section class="history-panel">
+      <h2>🎀 Meu cantinho de downloads</h2>
+      <p class="subtitle">Suas mídias recentes ficam guardadinhas aqui. 🐾</p>
+
+      <div id="historyList" class="history-list"></div>
+
+      <button id="clearHistory" class="secondary" type="button">
+        🗑️ Limpar histórico
+      </button>
+      <p class="note">O histórico fica salvo neste dispositivo e navegador.</p>
+    </section>
   </main>
 
-  <footer>Neko Downloader 🐱 · Feito com carinho</footer>
+  <footer>Neko Downloader 🐱 · Feito com carinho 💗</footer>
 
   <script>
     const form = document.getElementById('downloadForm');
@@ -160,20 +264,138 @@
     const link = document.getElementById('downloadLink');
     const filename = document.getElementById('filename');
     const preview = document.getElementById('preview');
+    const historyList = document.getElementById('historyList');
+    const clearHistoryButton = document.getElementById('clearHistory');
 
-    function status(message, type = 'info') {
+    const STORAGE_KEY = 'neko_download_history_v1';
+    const MAX_HISTORY = 30;
+
+    function showStatus(message, type = 'info') {
       statusBox.textContent = message;
       statusBox.className = 'status show ' + type;
     }
 
     function safeUrl(value) {
       try {
-        const u = new URL(value);
-        return u.protocol === 'https:' ? u.href : null;
+        const url = new URL(value);
+        return url.protocol === 'https:' ? url.href : null;
       } catch {
         return null;
       }
     }
+
+    function getHistory() {
+      try {
+        const data = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        return Array.isArray(data) ? data : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveHistory(items) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        return true;
+      } catch {
+        showStatus(
+          '⚠️ Não foi possível salvar o histórico neste dispositivo.',
+          'error'
+        );
+        return false;
+      }
+    }
+
+    function renderHistory() {
+      const items = getHistory();
+      historyList.replaceChildren();
+
+      if (!items.length) {
+        const empty = document.createElement('div');
+        empty.className = 'empty';
+        empty.textContent = '🌸 Ainda não há downloads por aqui. Vamos começar?';
+        historyList.appendChild(empty);
+        return;
+      }
+
+      items.forEach((item) => {
+        const card = document.createElement('article');
+        card.className = 'history-item';
+
+        const name = document.createElement('div');
+        name.className = 'history-name';
+        name.textContent = '🐾 ' + (item.name || 'Neko_Download');
+
+        const date = document.createElement('div');
+        date.className = 'history-date';
+
+        const parsedDate = new Date(item.date);
+        date.textContent = Number.isNaN(parsedDate.getTime())
+          ? 'Download anterior'
+          : parsedDate.toLocaleString('pt-BR');
+
+        const actions = document.createElement('div');
+        actions.className = 'history-actions';
+
+        const openLink = document.createElement('a');
+        const validMediaUrl = safeUrl(item.url);
+
+        if (validMediaUrl) {
+          openLink.href = validMediaUrl;
+          openLink.target = '_blank';
+          openLink.rel = 'noopener noreferrer';
+          openLink.textContent = '⬇️ Abrir mídia';
+        } else {
+          openLink.textContent = 'Link indisponível';
+          openLink.style.opacity = '.6';
+          openLink.style.pointerEvents = 'none';
+        }
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'secondary';
+        removeButton.textContent = '✖ Remover';
+        removeButton.addEventListener('click', () => {
+          const remaining = getHistory().filter(entry => entry.id !== item.id);
+          saveHistory(remaining);
+          renderHistory();
+        });
+
+        actions.append(openLink, removeButton);
+        card.append(name, date, actions);
+        historyList.appendChild(card);
+      });
+    }
+
+    function addToHistory(name, url) {
+      const items = getHistory();
+
+      const newItem = {
+        id: Date.now().toString() + Math.random().toString(36).slice(2, 8),
+        name: String(name || 'Neko_Download').slice(0, 180),
+        url,
+        date: new Date().toISOString()
+      };
+
+      items.unshift(newItem);
+      saveHistory(items.slice(0, MAX_HISTORY));
+      renderHistory();
+    }
+
+    clearHistoryButton.addEventListener('click', () => {
+      const items = getHistory();
+
+      if (!items.length) {
+        showStatus('🌸 Seu histórico já está vazio!');
+        return;
+      }
+
+      if (confirm('🐱 Quer mesmo apagar todo o histórico de downloads?')) {
+        saveHistory([]);
+        renderHistory();
+        showStatus('💗 Histórico limpo com sucesso!');
+      }
+    });
 
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
@@ -181,25 +403,31 @@
       statusBox.className = 'status';
 
       let instagramUrl;
+
       try {
         instagramUrl = new URL(input.value.trim());
       } catch {
-        status('😿 Cole um link válido do Instagram.', 'error');
+        showStatus('😿 Cole um link válido do Instagram.', 'error');
         return;
       }
 
+      const allowedHosts = [
+        'instagram.com',
+        'www.instagram.com',
+        'm.instagram.com'
+      ];
+
       if (
         instagramUrl.protocol !== 'https:' ||
-        !['instagram.com', 'www.instagram.com', 'm.instagram.com']
-          .includes(instagramUrl.hostname.toLowerCase())
+        !allowedHosts.includes(instagramUrl.hostname.toLowerCase())
       ) {
-        status('😿 Cole um link HTTPS válido do Instagram.', 'error');
+        showStatus('😿 Cole um link HTTPS válido do Instagram.', 'error');
         return;
       }
 
       button.disabled = true;
       button.textContent = '⏳ Extraindo mídia...';
-      status('🌸 Consultando a API. Aguarde um instante.');
+      showStatus('🌸 Consultando a API. Aguarde um instante.');
 
       try {
         const response = await fetch('/api/download', {
@@ -211,44 +439,72 @@
         const data = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          throw new Error(data.error || data.message || 'Falha ao consultar a API.');
+          const message = typeof data.error === 'string'
+            ? data.error
+            : typeof data.message === 'string'
+              ? data.message
+              : 'Falha ao consultar a API.';
+          throw new Error(message);
+        }
+
+        if (data.success === false) {
+          const message = typeof data.error === 'string'
+            ? data.error
+            : 'A API não conseguiu extrair essa mídia.';
+          throw new Error(message);
         }
 
         const medias = Array.isArray(data.medias) ? data.medias :
                        Array.isArray(data.picker) ? data.picker : [];
 
-        const firstMedia = medias.find(item =>
+        const validMedias = medias.filter(item =>
           item && typeof item.url === 'string' && safeUrl(item.url)
         );
 
-        const mediaUrl = data.mediaUrl || data.download_url || data.url ||
-                         (firstMedia ? firstMedia.url : null);
-        const validMediaUrl = mediaUrl ? safeUrl(mediaUrl) : null;
+        const firstMedia = validMedias[0] || null;
+        const candidateUrl =
+          data.mediaUrl || data.download_url || data.url ||
+          (firstMedia ? firstMedia.url : null);
 
-        if (data.success === false || !validMediaUrl) {
-          throw new Error(data.error || 'A API não retornou um arquivo válido.');
+        const mediaUrl = candidateUrl ? safeUrl(candidateUrl) : null;
+
+        if (!mediaUrl) {
+          throw new Error('A API não retornou um link de mídia válido.');
         }
 
-        link.href = validMediaUrl;
-        filename.textContent = data.filename || 'Neko_Download';
+        const mediaName = String(data.filename || 'Neko_Download');
 
-        if (firstMedia && firstMedia.type !== 'image') {
-          preview.src = validMediaUrl;
+        link.href = mediaUrl;
+        filename.textContent = mediaName;
+
+        const mediaType = String(firstMedia?.type || '').toLowerCase();
+        const isVideo = mediaType === 'video' ||
+                        mediaType === 'mp4' ||
+                        /\.(mp4|webm)(?:[?#]|$)/i.test(mediaUrl);
+
+        if (isVideo) {
+          preview.src = mediaUrl;
           preview.hidden = false;
         } else {
+          preview.pause();
           preview.removeAttribute('src');
+          preview.load();
           preview.hidden = true;
         }
 
         result.classList.add('show');
-        status('✨ Extração concluída! Toque no botão para acessar a mídia.');
+        addToHistory(mediaName, mediaUrl);
+        showStatus('✨ Extração concluída! Sua mídia está pronta.');
+
       } catch (error) {
-        status('😿 ' + error.message, 'error');
+        showStatus('😿 ' + (error.message || 'Ocorreu um erro inesperado.'), 'error');
       } finally {
         button.disabled = false;
         button.textContent = '✨ Purificar e Extrair Mídia';
       }
     });
+
+    renderHistory();
 
     if ('serviceWorker' in navigator && location.protocol === 'https:') {
       window.addEventListener('load', () => {
