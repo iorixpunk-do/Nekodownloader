@@ -30,6 +30,54 @@ function isInstagramUrl(value) {
   }
 }
 
+function getAudioStatus(media) {
+  const candidates = [
+    media.has_audio,
+    media.hasAudio,
+    media.audio_available,
+    media.audioAvailable,
+    media.includes_audio,
+    media.includesAudio,
+    media.audio
+  ];
+
+  for (const value of candidates) {
+    if (typeof value === "boolean") return value;
+    if (value === 1 || value === 0) return value === 1;
+
+    if (typeof value === "string") {
+      const normalized = value.trim().toLowerCase();
+
+      if (["true", "yes", "sim", "present"].includes(normalized)) {
+        return true;
+      }
+
+      if (["false", "no", "não", "nao", "absent"].includes(normalized)) {
+        return false;
+      }
+    }
+  }
+
+  return null;
+}
+
+function getQuality(media) {
+  const width = Number(media.width) || 0;
+  const height = Number(media.height) || 0;
+
+  if (!width || !height) return "Qualidade não informada";
+
+  const resolution = Math.max(width, height);
+
+  if (resolution >= 2160) return "4K";
+  if (resolution >= 1440) return "1440p";
+  if (resolution >= 1080) return "1080p Full HD";
+  if (resolution >= 720) return "720p HD";
+  if (resolution >= 480) return "480p SD";
+
+  return `${resolution}p`;
+}
+
 app.get("/api/health", (req, res) => {
   res.json({
     success: true,
@@ -56,9 +104,7 @@ app.post("/api/download", async (req, res) => {
       });
     }
 
-    const endpoint = new URL(
-      "https://api.saveapi.org/v1/download"
-    );
+    const endpoint = new URL("https://api.saveapi.org/v1/download");
     endpoint.searchParams.set("url", url);
 
     const response = await fetch(endpoint, {
@@ -73,39 +119,54 @@ app.post("/api/download", async (req, res) => {
     const data = await response.json().catch(() => ({}));
 
     if (!response.ok || data.success !== true) {
-      const status = response.status === 429 ? 429 : 502;
-
-      return res.status(status).json({
+      return res.status(response.status === 429 ? 429 : 502).json({
         success: false,
         error:
           data.error?.message ||
           data.message ||
-          "Não foi possível obter o vídeo. Tente novamente.",
+          "Não foi possível obter a mídia. Tente novamente.",
         code: data.error?.code || null
       });
     }
 
     const videos = Array.isArray(data.medias)
-      ? data.medias.filter(
-          media =>
+      ? data.medias
+          .filter(media =>
+            media &&
             media.type === "video" &&
             typeof media.url === "string" &&
             /^https:\/\//i.test(media.url)
-        )
+          )
+          .map((media, index) => ({
+            id: String(index),
+            url: media.url,
+            type: "video",
+            width: Number(media.width) || null,
+            height: Number(media.height) || null,
+            quality: getQuality(media),
+            audio: getAudioStatus(media),
+            ext: media.ext || null,
+            filename: media.filename || null
+          }))
       : [];
 
-    if (videos.length === 0) {
+    if (!videos.length) {
       return res.status(404).json({
         success: false,
         error: "Nenhum vídeo disponível nesse link público."
       });
     }
 
-    // Prefere a maior resolução informada pela API.
     videos.sort((a, b) => {
-      const resolutionA = (a.width || 0) * (a.height || 0);
-      const resolutionB = (b.width || 0) * (b.height || 0);
-      return resolutionB - resolutionA;
+      const audioA = a.audio === true ? 1 : 0;
+      const audioB = b.audio === true ? 1 : 0;
+
+      if (audioA !== audioB) return audioB - audioA;
+
+      return (
+        (b.width || 0) * (b.height || 0) -
+        (a.width || 0) * (a.height || 0)
+      );
     });
 
     const selected = videos[0];
@@ -144,12 +205,9 @@ app.get("*", (req, res, next) => {
     });
   }
 
-  res.sendFile(
-    path.join(__dirname, "public", "index.html"),
-    err => {
-      if (err) next(err);
-    }
-  );
+  res.sendFile(path.join(__dirname, "public", "index.html"), err => {
+    if (err) next(err);
+  });
 });
 
 app.listen(PORT, "0.0.0.0", () => {
